@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Literacy Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000000;
+    --surface: #111111;
+    --surface-2: #1A1A1A;
+    --border: #2A2A2A;
+    --border-light: #222222;
+    --text: #F5F5F7;
+    --text-secondary: #86868B;
+    --accent: #2997FF;
+    --accent-hover: #5AB2FF;
+    --accent-light: rgba(41,151,255,0.1);
+    --green: #30D158;
+    --green-light: rgba(48,209,88,0.1);
+    --blue: #64D2FF;
+    --blue-light: rgba(100,210,255,0.08);
+    --purple: #BF5AF2;
+    --purple-light: rgba(191,90,242,0.1);
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    --serif: 'Playfair Display', Georgia, serif;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+  }
+
+  /* --- Navigation sidebar --- */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s;
+  }
+
+  .sidebar.hidden { transform: translateX(-280px); }
+
+  .sidebar-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-header h1 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #F5F5F7, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sidebar-header p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .nav-list {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--accent-light); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+  .nav-item .ch-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .ch-num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 0 12px rgba(41,151,255,0.3);
+  }
+
+  .nav-item.completed .ch-num {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  /* --- Main content --- */
+  .main {
+    margin-left: 280px;
+    min-height: 100vh;
+    transition: margin-left 0.3s;
+  }
+
+  .main.full { margin-left: 0; }
+
+  .toggle-sidebar {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 200;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .toggle-sidebar.show { display: flex; }
+
+  /* --- Chapter slides --- */
+  .chapter {
+    display: none;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 40px 120px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .chapter.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chapter-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .chapter h2 {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #F5F5F7 0%, #86868B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .chapter .subtitle {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: 48px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .chapter h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 48px 0 16px;
+    letter-spacing: -0.02em;
+    color: #F5F5F7;
+  }
+
+  .chapter h4 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+    color: var(--accent);
+  }
+
+  .chapter p { margin-bottom: 16px; }
+
+  .chapter ul, .chapter ol {
+    padding-left: 24px;
+    margin-bottom: 16px;
+  }
+
+  .chapter li { margin-bottom: 8px; }
+
+  .chapter strong { font-weight: 600; }
+
+  .chapter hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* --- Special blocks --- */
+  .big-idea {
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    padding: 24px 28px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 28px 0;
+    font-size: 18px;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .example-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .example-box .example-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+
+  .exercise-box {
+    background: var(--green-light);
+    border: 1px solid rgba(48,209,88,0.12);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 28px 0;
+  }
+
+  .exercise-box .exercise-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+
+  .key-takeaway {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: 36px 0;
+    box-shadow: 0 0 20px rgba(41,151,255,0.05);
+  }
+
+  .key-takeaway .takeaway-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .prompt-box {
+    background: var(--surface-2);
+    color: var(--green);
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 16px 0;
+    white-space: pre-wrap;
+    border: 1px solid var(--border);
+  }
+
+  /* --- Tables --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 28px;
+    font-size: 14px;
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+    color: var(--text);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface); }
+
+  /* --- Flow diagram --- */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 24px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--surface);
+    padding: 24px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  .flow-step .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .flow-arrow {
+    margin-left: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  /* --- Bottom navigation --- */
+  .chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .nav-btn {
+    padding: 14px 32px;
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .nav-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 0 20px rgba(41,151,255,0.2);
+  }
+
+  .nav-btn.primary:hover { background: var(--accent-hover); box-shadow: 0 0 30px rgba(41,151,255,0.3); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 280px;
+    right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 50;
+    transition: left 0.3s;
+  }
+
+  .progress-bar.full { left: 0; }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px rgba(41,151,255,0.4);
+  }
+
+  /* --- Course map (intro) --- */
+  .course-map {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 24px 0;
+  }
+
+  .map-card {
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .map-card:hover { border-color: var(--accent); background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(41,151,255,0.1); }
+
+  .map-card .map-ch {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .map-card .map-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 4px 0 2px;
+  }
+
+  .map-card .map-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-280px); }
+    .sidebar.visible { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .toggle-sidebar { display: flex !important; }
+    .progress-bar { left: 0; }
+    .course-map { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+<button class="toggle-sidebar" id="toggle-sidebar" onclick="toggleSidebar()">&#9776;</button>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>AI Literacy</h1>
+    <p>A Beginner's Guide to Modern AI</p>
+  </div>
+  <div class="nav-list" id="nav-list"></div>
+</aside>
+
+<!-- Main content -->
+<div class="main" id="main">
+
+<!-- ==================== INTRO ==================== -->
+<div class="chapter active" data-chapter="0">
+  <div class="chapter-label">Welcome</div>
+  <h2>AI Literacy Training Course</h2>
+  <p class="subtitle">A Beginner's Guide — From Zero to Understanding Modern AI. No technical background needed. Just curiosity.</p>
+
+  <h3>Who is this for?</h3>
+  <p>Someone who uses a computer and phone daily but has never used AI tools. We start from the very beginning and build up step by step.</p>
+
+  <h3>How to use this course</h3>
+  <ul>
+    <li>Go chapter by chapter. <strong>Don't skip ahead.</strong> Each chapter builds on the previous one.</li>
+    <li>Try <strong>every exercise</strong> before moving on.</li>
+    <li>Use the sidebar to navigate, or the arrows at the bottom of each chapter.</li>
+  </ul>
+
+  <h3>Course Map</h3>
+  <div class="course-map">
+    <div class="map-card" onclick="goTo(1)">
+      <div class="map-ch">Chapter 1</div>
+      <div class="map-title">The Human Question</div>
+      <div class="map-desc">How we've always found answers</div>
+    </div>
+    <div class="map-card" onclick="goTo(2)">
+      <div class="map-ch">Chapter 2</div>
+      <div class="map-title">The Search Engine Era</div>
+      <div class="map-desc">How Google changed everything</div>
+    </div>
+    <div class="map-card" onclick="goTo(3)">
+      <div class="map-ch">Chapter 3</div>
+      <div class="map-title">Enter AI</div>
+      <div class="map-desc">What ChatGPT is and why it matters</div>
+    </div>
+    <div class="map-card" onclick="goTo(4)">
+      <div class="map-ch">Chapter 4</div>
+      <div class="map-title">How AI Actually Works</div>
+      <div class="map-desc">LLMs explained simply</div>
+    </div>
+    <div class="map-card" onclick="goTo(5)">
+      <div class="map-ch">Chapter 5</div>
+      <div class="map-title">Talking to AI</div>
+      <div class="map-desc">The art of asking good questions</div>
+    </div>
+    <div class="map-card" onclick="goTo(6)">
+      <div class="map-ch">Chapter 6</div>
+      <div class="map-title">AI Beyond Chat</div>
+      <div class="map-desc">Images, audio, video, and more</div>
+    </div>
+    <div class="map-card" onclick="goTo(7)">
+      <div class="map-ch">Chapter 7</div>
+      <div class="map-title">AI That Takes Action</div>
+      <div class="map-desc">Agentic AI explained</div>
+    </div>
+    <div class="map-card" onclick="goTo(8)">
+      <div class="map-ch">Chapter 8</div>
+      <div class="map-title">AI Connects to Your World</div>
+      <div class="map-desc">MCPs and tool use</div>
+    </div>
+    <div class="map-card" onclick="goTo(9)">
+      <div class="map-ch">Chapter 9</div>
+      <div class="map-title">Choosing the Right AI</div>
+      <div class="map-desc">Comparing models and tools</div>
+    </div>
+    <div class="map-card" onclick="goTo(10)">
+      <div class="map-ch">Chapter 10</div>
+      <div class="map-title">Using AI Responsibly</div>
+      <div class="map-desc">Limitations, ethics, and best practices</div>
+    </div>
+    <div class="map-card" onclick="goTo(11)" style="border-left:3px solid var(--accent)">
+      <div class="map-ch">Part 2: Hands-On</div>
+      <div class="map-title">Vibe Coding</div>
+      <div class="map-desc">Build software by describing what you want</div>
+    </div>
+    <div class="map-card" onclick="goTo(12)">
+      <div class="map-ch">Chapter 12</div>
+      <div class="map-title">AI Coding Tools</div>
+      <div class="map-desc">Claude Code, Cursor, Copilot, Replit</div>
+    </div>
+    <div class="map-card" onclick="goTo(13)">
+      <div class="map-ch">Chapter 13</div>
+      <div class="map-title">Build Your First App</div>
+      <div class="map-desc">Hands-on: create a real web app with AI</div>
+    </div>
+    <div class="map-card" onclick="goTo(14)">
+      <div class="map-ch">Chapter 14</div>
+      <div class="map-title">System Prompts</div>
+      <div class="map-desc">Custom instructions and CLAUDE.md</div>
+    </div>
+    <div class="map-card" onclick="goTo(15)">
+      <div class="map-ch">Chapter 15</div>
+      <div class="map-title">Skills & Extensions</div>
+      <div class="map-desc">Teaching AI new abilities</div>
+    </div>
+    <div class="map-card" onclick="goTo(16)">
+      <div class="map-ch">Chapter 16</div>
+      <div class="map-title">APIs & Integrations</div>
+      <div class="map-desc">How AI connects to everything</div>
+    </div>
+    <div class="map-card" onclick="goTo(17)">
+      <div class="map-ch">Chapter 17</div>
+      <div class="map-title">RAG: AI + Your Data</div>
+      <div class="map-desc">AI that knows your documents</div>
+    </div>
+    <div class="map-card" onclick="goTo(18)">
+      <div class="map-ch">Chapter 18</div>
+      <div class="map-title">Building AI Agents</div>
+      <div class="map-desc">Create automated workflows with code</div>
+    </div>
+    <div class="map-card" onclick="goTo(19)">
+      <div class="map-ch">Chapter 19</div>
+      <div class="map-title">AI at Work</div>
+      <div class="map-desc">Daily productivity playbook</div>
+    </div>
+    <div class="map-card" onclick="goTo(20)">
+      <div class="map-ch">Chapter 20</div>
+      <div class="map-title">The AI Landscape</div>
+      <div class="map-desc">Ecosystem, careers, and what's next</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <div></div>
+    <button class="nav-btn primary" onclick="goTo(1)">Start Course &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 1 ==================== -->
+<div class="chapter" data-chapter="1">
+  <div class="chapter-label">Chapter 1</div>
+  <h2>The Human Question</h2>
+  <p class="subtitle">How we've always found answers — by asking other humans.</p>
+
+  <div class="big-idea">Since the beginning of time, when humans had a question, they asked another human — a <strong>subject matter expert</strong>.</div>
+
+  <p>Think about it:</p>
+  <ul>
+    <li><strong>You feel sick</strong> &rarr; You go to a doctor</li>
+    <li><strong>Your car breaks down</strong> &rarr; You call a mechanic</li>
+    <li><strong>You need legal advice</strong> &rarr; You talk to a lawyer</li>
+    <li><strong>You want to learn to cook</strong> &rarr; You ask your mom or grandma</li>
+  </ul>
+
+  <p>This is the oldest form of getting answers: finding someone who knows a lot about a specific topic and asking them directly.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: Planning a Trip to Japan</div>
+    <p>Imagine you want to plan a two-week trip to Japan. In the "human expert" era, here's what you'd do:</p>
+    <ol>
+      <li><strong>Ask a friend</strong> who visited Japan &rarr; "What should I see? Where should I stay?"</li>
+      <li><strong>Visit a travel agent</strong> &rarr; They'd plan your itinerary, book hotels, arrange flights</li>
+      <li><strong>Buy a guidebook</strong> &rarr; Lonely Planet or Fodor's Japan guide</li>
+      <li><strong>Ask a coworker</strong> who is Japanese &rarr; "What food should I try? Any tips?"</li>
+    </ol>
+    <p><strong>How long would this take?</strong> Weeks. Maybe a month of gathering opinions, comparing advice, and putting it all together yourself.</p>
+  </div>
+
+  <h3>The Limitations of Asking Humans</h3>
+  <p>This system worked, but it had problems:</p>
+
+  <table>
+    <tr><th>Problem</th><th>Example</th></tr>
+    <tr><td><strong>Access</strong></td><td>You might not know a doctor, lawyer, or expert personally</td></tr>
+    <tr><td><strong>Cost</strong></td><td>Experts charge money &mdash; $200/hour for a lawyer, $150 for a mechanic</td></tr>
+    <tr><td><strong>Availability</strong></td><td>Your friend is busy, the travel agent is on vacation</td></tr>
+    <tr><td><strong>Bias</strong></td><td>Your friend hates sushi, so they tell you to skip it &mdash; but you might love it</td></tr>
+    <tr><td><strong>Limited knowledge</strong></td><td>Even experts don't know everything</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>For thousands of years, <strong>getting answers = finding the right person to ask</strong>. This was slow, expensive, and not always possible.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 1.1</div>
+    <p>Think of three questions you had in the last month. For each one, write down:</p>
+    <ul>
+      <li>What was the question?</li>
+      <li>Who did you ask (or who would you have asked)?</li>
+      <li>How long did it take to get a good answer?</li>
+    </ul>
+    <p><em>Example: Question: "What's the best phone plan for my family?" &mdash; Who I asked: My brother-in-law who works in telecom &mdash; How long: Had to wait until Sunday dinner to ask him, 5 days.</em></p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 1.2</div>
+    <p>Think about a time you needed expert help but <strong>couldn't get it</strong>. Maybe you couldn't afford a lawyer, or didn't know a good plumber. Write it down. We'll come back to this later.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(0)">&larr; Course Map</button>
+    <button class="nav-btn primary" onclick="goTo(2)">Chapter 2 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 2 ==================== -->
+<div class="chapter" data-chapter="2">
+  <div class="chapter-label">Chapter 2</div>
+  <h2>The Search Engine Era</h2>
+  <p class="subtitle">How Google changed everything &mdash; and what it still couldn't do.</p>
+
+  <div class="big-idea">In the late 1990s, Google appeared. Suddenly, instead of asking a person, you could type words into a box and get information from the entire internet. This was magical. But it wasn't perfect.</div>
+
+  <h3>How Google Works (The Simple Version)</h3>
+  <p>Think of Google as a <strong>giant library with a really fast librarian</strong>.</p>
+  <ol>
+    <li>Billions of websites exist on the internet (the books in the library)</li>
+    <li>Google's robots crawl the internet and make a catalog of every webpage (the librarian reads every book)</li>
+    <li>When you type words into Google, the librarian finds the most relevant pages (pulls books off the shelf)</li>
+    <li>You get a list of 10 blue links per page (the librarian hands you a stack of books)</li>
+  </ol>
+  <p><strong>But here's the catch: the librarian hands you the books. YOU still have to read them.</strong></p>
+
+  <div class="example-box">
+    <div class="example-label">Example: Planning a Trip to Japan (Google Era)</div>
+    <ol>
+      <li>Search <strong>"best places to visit in Japan"</strong> &rarr; 500 million results. Click the first 5 links. Read 5 different articles. Take notes.</li>
+      <li>Search <strong>"best hotels in Tokyo"</strong> &rarr; Compare TripAdvisor, Booking.com, travel blogs. Spend 2 hours reading reviews.</li>
+      <li>Search <strong>"Japan itinerary 2 weeks"</strong> &rarr; Find 3 different itineraries. None are exactly what you want. Mix and match.</li>
+      <li>Search <strong>"Japan visa requirements"</strong>, <strong>"best time to visit Japan"</strong>, <strong>"Japan train pass worth it"</strong>...</li>
+    </ol>
+    <p><strong>How long does this take?</strong> Still days. You have 40 browser tabs open. Notes scattered everywhere. Conflicting information. And you STILL have to put it all together into YOUR plan.</p>
+  </div>
+
+  <h3>The Google Problem: Information vs. Answers</h3>
+  <p>Google gives you <strong>information</strong>. It does NOT give you <strong>answers</strong>.</p>
+
+  <table>
+    <tr><th>What You Want</th><th>What Google Gives You</th></tr>
+    <tr><td>"A training program for new employees"</td><td>50 articles ABOUT training programs</td></tr>
+    <tr><td>"A birthday speech for my dad"</td><td>Tips on HOW to write a speech</td></tr>
+    <tr><td>"A meal plan for losing weight"</td><td>100 different diet websites</td></tr>
+    <tr><td>"A budget for my small business"</td><td>Templates and articles about budgeting</td></tr>
+  </table>
+
+  <p>Google points you to information, but <strong>you still do the heavy lifting</strong>: reading multiple sources, comparing, filtering, organizing, and creating the final thing yourself.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building a Training Program</div>
+    <p>Your boss asks you to create a training program for new sales hires. With Google:</p>
+    <ol>
+      <li>Search "sales training program template" &rarr; Find 20 templates, none fit your company</li>
+      <li>Search "onboarding best practices" &rarr; Read 10 articles</li>
+      <li>Search "sales training exercises" &rarr; Find scattered ideas</li>
+      <li>Search "how to measure training effectiveness" &rarr; More articles</li>
+      <li>Open PowerPoint and spend <strong>3 days</strong> building it from scratch</li>
+    </ol>
+    <p><strong>Google helped you gather ingredients. But you still had to cook the meal.</strong></p>
+  </div>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Google was a massive leap forward &mdash; free access to the world's information, instantly. But it still required you to know the right <strong>keywords</strong>, <strong>read</strong> through many results, <strong>judge</strong> quality, and <strong>assemble</strong> everything yourself.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 2.1</div>
+    <p>Try this right now. Google the following:</p>
+    <div class="prompt-box">"Create a 30-day fitness plan for a beginner who can only exercise 20 minutes a day"</div>
+    <p>Notice: How many results? Did any single result give you EXACTLY what you needed? How many tabs did you open? How long would it take to build your personal plan from these results?</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 2.2</div>
+    <p>Think about something you Googled recently where you spent a lot of time reading multiple articles, comparing information, and still had to build the final thing yourself. Write it down and how long it took. We'll revisit this next chapter.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(1)">&larr; Chapter 1</button>
+    <button class="nav-btn primary" onclick="goTo(3)">Chapter 3 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 3 ==================== -->
+<div class="chapter" data-chapter="3">
+  <div class="chapter-label">Chapter 3</div>
+  <h2>Enter AI &mdash; Your New Assistant</h2>
+  <p class="subtitle">What ChatGPT is and why it changed everything.</p>
+
+  <div class="big-idea">In November 2022, OpenAI released <strong>ChatGPT</strong>. Instead of typing keywords and getting a list of links, you could now <strong>have a conversation</strong> with a computer and get <strong>direct, ready-to-use answers</strong>.</div>
+
+  <table>
+    <tr><th>Era</th><th>How You Get Answers</th></tr>
+    <tr><td><strong>Human Expert</strong></td><td>"Hey doctor, my knee hurts when I run" &rarr; Doctor examines you and gives advice</td></tr>
+    <tr><td><strong>Google</strong></td><td>Type "knee pain running" &rarr; Read 20 articles &rarr; Figure out what applies to you</td></tr>
+    <tr><td><strong>AI</strong></td><td>"My left knee hurts when I run, especially going downhill, I'm 35 and run 3x a week" &rarr; Get specific, personalized response</td></tr>
+  </table>
+
+  <div class="example-box">
+    <div class="example-label">Example: Planning a Trip to Japan (AI Era)</div>
+    <p><strong>You type:</strong></p>
+    <div class="prompt-box">"I want to plan a 2-week trip to Japan in April. I love food, history, and nature. I don't like crowds. My budget is $4,000 not including flights. I've never been to Asia before. Can you create a day-by-day itinerary with hotel recommendations, estimated costs, and must-try foods in each city?"</div>
+    <p><strong>AI responds with:</strong> A complete 14-day itinerary, hotel recommendations in your budget, daily cost estimates, restaurant suggestions, cherry blossom season tips, train pass advice, cultural etiquette, and packing suggestions.</p>
+    <p><strong>How long did this take?</strong> About 60 seconds.</p>
+    <p>And if you don't like something? Just say: <em>"Can you swap 1 day in Tokyo for a day in Kanazawa instead?"</em> &mdash; AI adjusts the entire plan instantly.</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building That Training Program</div>
+    <div class="prompt-box">"Create a 2-week onboarding and training program for new sales hires at a B2B software company. Include daily schedules, learning objectives, exercises, role-play scenarios, and a quiz for each module. The product is a project management tool for construction companies."</div>
+    <p><strong>AI gives you:</strong> A complete 10-day program with daily schedules, learning objectives, role-play scripts, quiz questions with answer keys, and a graduation checklist.</p>
+    <p><strong>Instead of 3 days of research and building, you have a solid first draft in 2 minutes.</strong></p>
+  </div>
+
+  <h3>What Makes AI Different From Google</h3>
+  <table>
+    <tr><th>Google</th><th>AI (ChatGPT, Claude, etc.)</th></tr>
+    <tr><td>You type <strong>keywords</strong></td><td>You write in <strong>normal language</strong></td></tr>
+    <tr><td>You get a <strong>list of links</strong></td><td>You get a <strong>direct answer</strong></td></tr>
+    <tr><td>You have to <strong>read and research</strong></td><td>AI has <strong>already synthesized</strong></td></tr>
+    <tr><td>You <strong>assemble</strong> the final product</td><td>AI gives a <strong>ready-to-use draft</strong></td></tr>
+    <tr><td>Same results for everyone</td><td><strong>Personalized</strong> to your question</td></tr>
+    <tr><td>One-way (you search, you read)</td><td><strong>Two-way conversation</strong> with follow-ups</td></tr>
+  </table>
+
+  <h3>The Conversation Factor</h3>
+  <p><strong>Google</strong> is like going to a library. You walk in, find books, read them, take notes, walk out.</p>
+  <p><strong>AI</strong> is like having a brilliant friend who has read every book in the library, and you can just talk to them. You can say things like:</p>
+  <ul>
+    <li>"Make it simpler"</li>
+    <li>"Give me more detail on point 3"</li>
+    <li>"Change the tone to be more casual"</li>
+    <li>"I didn't understand that &mdash; explain it like I'm 10 years old"</li>
+  </ul>
+
+  <h3>What AI Tools Exist Today?</h3>
+  <table>
+    <tr><th>Tool</th><th>Made By</th><th>Known For</th></tr>
+    <tr><td><strong>ChatGPT</strong></td><td>OpenAI</td><td>General questions, writing, brainstorming</td></tr>
+    <tr><td><strong>Claude</strong></td><td>Anthropic</td><td>Long documents, analysis, careful reasoning</td></tr>
+    <tr><td><strong>Gemini</strong></td><td>Google</td><td>Integration with Google services</td></tr>
+    <tr><td><strong>Copilot</strong></td><td>Microsoft</td><td>Integration with Office apps</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI doesn't just find information &mdash; it <strong>creates answers</strong> tailored to your specific question. It's like going from a library to having a personal expert on call 24/7 who works for free.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 3.1 &mdash; Your First AI Conversation</div>
+    <p>Go to <strong>chat.openai.com</strong> or <strong>claude.ai</strong> (both free). Try this exact prompt:</p>
+    <div class="prompt-box">"I need to write a thank-you email to my neighbor who watched my dog for a week while I was on vacation. The dog's name is Max. Keep it warm but not too long."</div>
+    <p>Then try a follow-up:</p>
+    <div class="prompt-box">"Can you make it more casual? And mention that Max probably drove them crazy with his barking."</div>
+    <p>Notice how the AI adjusted? That's the conversation factor.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 3.2 &mdash; AI vs. Google Challenge</div>
+    <p>Pick one task below. Do it with Google first (10 minutes), then with AI. Compare speed and quality:</p>
+    <ol>
+      <li>"Create a weekly grocery list and meal plan for a family of 4, budget $150/week, one child is vegetarian"</li>
+      <li>"Write a professional LinkedIn bio &mdash; I'm a sales manager with 8 years in medical devices"</li>
+      <li>"Explain how a mortgage works, including fixed vs. variable rates, in simple terms"</li>
+    </ol>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(2)">&larr; Chapter 2</button>
+    <button class="nav-btn primary" onclick="goTo(4)">Chapter 4 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 4 ==================== -->
+<div class="chapter" data-chapter="4">
+  <div class="chapter-label">Chapter 4</div>
+  <h2>How AI Actually Works</h2>
+  <p class="subtitle">LLMs explained simply &mdash; no math, no code.</p>
+
+  <div class="big-idea">When people say "AI" today, they usually mean a <strong>Large Language Model (LLM)</strong>. Let's break that down: <strong>Large</strong> = read billions of pages. <strong>Language</strong> = works with human language. <strong>Model</strong> = a program that learned patterns from all that text.</div>
+
+  <h3>The Restaurant Analogy</h3>
+  <p>Imagine a chef who has:</p>
+  <ul>
+    <li>Eaten at <strong>every restaurant in the world</strong></li>
+    <li>Read <strong>every cookbook ever written</strong></li>
+    <li>Watched <strong>every cooking show ever made</strong></li>
+  </ul>
+  <p>You say: "Make me a pasta that's creamy but not heavy, with lemon, no dairy."</p>
+  <p>The chef doesn't look up a recipe. They've absorbed so many patterns about food that they can <strong>create</strong> a new dish matching your description. They know "creamy without dairy" means cashew cream or coconut milk. They know lemon pairs with certain herbs.</p>
+  <p><strong>That's how an LLM works.</strong> It has "read" so much text that it can generate new text following the patterns it learned.</p>
+
+  <h3>The Core Mechanic: Next-Word Prediction</h3>
+  <p><strong>An LLM predicts the next word.</strong> That's it. It's a very sophisticated word-prediction machine.</p>
+  <p>When you type "The capital of France is", the LLM has seen this pattern thousands of times and predicts the next word is "Paris."</p>
+
+  <table>
+    <tr><th>Your Phone's Autocomplete</th><th>AI / LLM</th></tr>
+    <tr><td>Learned from YOUR texts</td><td>Learned from the ENTIRE internet</td></tr>
+    <tr><td>Predicts 1-3 words</td><td>Generates pages of text</td></tr>
+    <tr><td>Simple patterns</td><td>Complex understanding</td></tr>
+    <tr><td>Can't follow instructions</td><td>Follows detailed instructions</td></tr>
+  </table>
+
+  <h3>What Does "Training" Mean?</h3>
+  <p><strong>Training a dog:</strong> Show the dog hundreds of examples: "Sit" &rarr; reward when it sits. Over time, the dog learns the pattern. It doesn't understand English. It learned the <strong>pattern</strong> between the sound and the action.</p>
+  <p><strong>Training an AI:</strong> Engineers show the AI billions of examples of text. The AI finds patterns: what words follow what words, how sentences are structured, how questions are answered. It learned incredibly complex <strong>patterns</strong>.</p>
+
+  <h3>AI Doesn't "Know" Things</h3>
+  <div class="big-idea">AI doesn't have a database of facts. It has learned patterns from text. This is why it can sometimes be <strong>wrong</strong> &mdash; we call these "<strong>hallucinations</strong>."</div>
+  <p>You ask: "Who won the Super Bowl in 2028?" The AI might confidently make up an answer because it has seen the pattern "Who won the Super Bowl in [year]" thousands of times, and it always ends with a team name. So it predicts a team name &mdash; even for a year that hasn't happened.</p>
+  <p><strong>This is not the AI lying. It's following patterns without knowing what's true or false.</strong></p>
+
+  <h3>Key Terms</h3>
+  <table>
+    <tr><th>Term</th><th>Simple Meaning</th><th>Analogy</th></tr>
+    <tr><td><strong>LLM</strong></td><td>Program that generates text from learned patterns</td><td>A chef who has eaten everywhere</td></tr>
+    <tr><td><strong>Training</strong></td><td>The process of learning from billions of texts</td><td>A student reading every book in the library</td></tr>
+    <tr><td><strong>Prompt</strong></td><td>What you type to the AI</td><td>Your order at a restaurant</td></tr>
+    <tr><td><strong>Token</strong></td><td>A piece of a word (AI reads in chunks)</td><td>Syllables: "under" + "stand" + "ing"</td></tr>
+    <tr><td><strong>Hallucination</strong></td><td>When AI generates something that sounds right but is wrong</td><td>Chef confidently serving a "traditional" dish they invented</td></tr>
+    <tr><td><strong>Context window</strong></td><td>How much text the AI can "see" at once</td><td>How many pages the chef can read at one time</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>LLMs are sophisticated pattern-matching machines. They've learned from billions of texts and generate new text following those patterns. They don't "think" &mdash; they predict. This is their superpower (write about anything) and their weakness (confidently wrong sometimes).</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 4.1 &mdash; Test the Limits</div>
+    <p>Go to ChatGPT or Claude and try these. Notice when AI is confident and correct vs. confident and wrong:</p>
+    <ol>
+      <li>Ask a factual question: "What is the capital of Australia?"</li>
+      <li>Ask about something very recent: "What happened in the news yesterday?"</li>
+      <li>Ask it to create: "Invent a new holiday and describe how people celebrate it"</li>
+      <li>Ask a trick question: "What is the population of the city of XYZ123?"</li>
+    </ol>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 4.2 &mdash; The Pattern Game</div>
+    <p>Type these to an AI and watch pattern completion in action:</p>
+    <div class="prompt-box">"Dog is to puppy as cat is to ___"
+"Happy is to sad as big is to ___"
+"If a doctor treats patients, and a teacher teaches students, then a chef ___ ___"</div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(3)">&larr; Chapter 3</button>
+    <button class="nav-btn primary" onclick="goTo(5)">Chapter 5 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 5 ==================== -->
+<div class="chapter" data-chapter="5">
+  <div class="chapter-label">Chapter 5</div>
+  <h2>Talking to AI Effectively</h2>
+  <p class="subtitle">The art of asking good questions &mdash; prompt engineering made simple.</p>
+
+  <div class="big-idea">Getting great results from AI is like giving instructions to a new employee. The clearer and more specific you are, the better the result. <strong>Vague question = Vague answer. Specific question = Specific answer.</strong></div>
+
+  <table>
+    <tr><th>Bad Prompt</th><th>Good Prompt</th></tr>
+    <tr><td>"Tell me about marketing"</td><td>"Explain 5 low-cost marketing strategies for a local bakery that just opened, with examples"</td></tr>
+    <tr><td>"Write an email"</td><td>"Write a professional email to a client explaining a 2-week delay due to supply chain issues. Apologetic but confident."</td></tr>
+    <tr><td>"Help with Excel"</td><td>"How do I create a pivot table showing total sales by product by month? Data is in columns A (date), B (product), C (amount)."</td></tr>
+  </table>
+
+  <h3>The 5 Elements of a Great Prompt</h3>
+
+  <h4>1. Role &mdash; Tell the AI WHO to be</h4>
+  <div class="prompt-box">"You are an experienced nutritionist..."
+"Act as a patient kindergarten teacher..."
+"You are a professional resume writer..."</div>
+
+  <h4>2. Task &mdash; Tell the AI WHAT to do</h4>
+  <div class="prompt-box">"...create a 7-day meal plan..."
+"...explain photosynthesis..."
+"...rewrite my resume..."</div>
+
+  <h4>3. Context &mdash; Give BACKGROUND</h4>
+  <div class="prompt-box">"...for a 40-year-old man with type 2 diabetes who hates cooking..."
+"...for a 5-year-old who loves dinosaurs..."
+"...I'm applying for a senior marketing role at a tech company..."</div>
+
+  <h4>4. Format &mdash; Tell the AI HOW to present it</h4>
+  <div class="prompt-box">"...in a table with columns for breakfast, lunch, dinner, and snacks"
+"...using a story about a dinosaur"
+"...in bullet points, keeping it to one page"</div>
+
+  <h4>5. Constraints &mdash; Set LIMITS</h4>
+  <div class="prompt-box">"...no seafood, under 2000 calories per day"
+"...use words a 5-year-old would understand"
+"...don't use buzzwords, be specific and honest"</div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building the Perfect Prompt Step by Step</div>
+    <p><strong>Start vague:</strong> "Write a speech"</p>
+    <p><strong>Add Role:</strong> "You are a professional speechwriter. Write a speech"</p>
+    <p><strong>Add Task:</strong> "...Write a 5-minute best man speech"</p>
+    <p><strong>Add Context:</strong> "...The groom's name is Tom, I've been his best friend since college, we were roommates for 3 years. He met his wife Sarah at a cooking class."</p>
+    <p><strong>Add Format:</strong> "...Include 2-3 funny anecdotes, a heartfelt moment, and end with a toast."</p>
+    <p><strong>Add Constraints:</strong> "...Keep it PG-rated, nothing embarrassing. Warm and funny, not roast-style."</p>
+  </div>
+
+  <h3>Common Prompt Patterns</h3>
+  <table>
+    <tr><th>Pattern</th><th>Example</th></tr>
+    <tr><td><strong>"Explain Like I'm..."</strong></td><td>"Explain blockchain like I'm a 10-year-old"</td></tr>
+    <tr><td><strong>"Give Me Options"</strong></td><td>"Give me 5 ways to start a presentation, from serious to humorous"</td></tr>
+    <tr><td><strong>"Step-by-Step"</strong></td><td>"Walk me through changing a tire, assuming I've never done it"</td></tr>
+    <tr><td><strong>"Review/Improve"</strong></td><td>"Here's my cover letter. Tell me what's weak and rewrite those parts"</td></tr>
+    <tr><td><strong>"Transform"</strong></td><td>"Turn these meeting notes into a professional summary email"</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI is only as good as what you ask it. Clear prompts with <strong>role, task, context, format, and constraints</strong> is the single most valuable AI skill. And you can always refine through follow-up conversation.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 5.1 &mdash; Prompt Makeover</div>
+    <p>Rewrite these vague prompts into detailed, specific ones using the 5 elements:</p>
+    <ol>
+      <li>"Help me with my resume"</li>
+      <li>"Write a social media post"</li>
+      <li>"Explain economics"</li>
+    </ol>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 5.2 &mdash; The Refinement Challenge</div>
+    <ol>
+      <li>Go to ChatGPT or Claude</li>
+      <li>Ask: "Write a bedtime story"</li>
+      <li>Refine with 5 follow-ups (add a character, change setting, adjust length, change the moral, add a plot twist)</li>
+      <li>Compare the first version with the final version</li>
+    </ol>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(4)">&larr; Chapter 4</button>
+    <button class="nav-btn primary" onclick="goTo(6)">Chapter 6 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 6 ==================== -->
+<div class="chapter" data-chapter="6">
+  <div class="chapter-label">Chapter 6</div>
+  <h2>AI Beyond Chat</h2>
+  <p class="subtitle">Images, audio, video, code, and data &mdash; AI can do more than write text.</p>
+
+  <div class="big-idea">Modern AI can work with <strong>images</strong> (create and understand pictures), <strong>audio</strong> (transcribe and generate speech), <strong>code</strong> (write programs), and <strong>data</strong> (analyze spreadsheets). When an AI works with multiple types, it's called <strong>multimodal</strong>.</div>
+
+  <h3>AI and Images</h3>
+  <h4>Creating Images From Words</h4>
+  <p>You type a description, AI creates an image. No photographer, no Photoshop, no stock photo website.</p>
+  <div class="prompt-box">"A golden retriever wearing a tiny business suit, sitting at a desk in a corporate office, looking very serious, photorealistic style"</div>
+
+  <h4>Understanding Images</h4>
+  <p>You can show AI a photo and ask questions:</p>
+  <ul>
+    <li>Upload a photo of a dashboard warning light &rarr; "What does this mean?"</li>
+    <li>Upload a photo of a plant &rarr; "What kind of plant is this?"</li>
+    <li>Upload a screenshot of an error &rarr; "How do I fix this?"</li>
+  </ul>
+
+  <h3>AI and Audio</h3>
+  <ul>
+    <li><strong>Transcription:</strong> Upload a meeting recording &rarr; AI types out everything said</li>
+    <li><strong>Translation:</strong> Speak in English &rarr; AI outputs Spanish</li>
+    <li><strong>Voice generation:</strong> Type text &rarr; AI reads it aloud naturally</li>
+  </ul>
+
+  <h3>AI and Code</h3>
+  <p>Even if you're not a programmer, this is useful:</p>
+  <ul>
+    <li>"Create an Excel formula that averages column B only where column A says 'Sales'" &rarr; AI writes the formula</li>
+    <li>"I have this error on my screen [paste it]" &rarr; AI explains what's wrong</li>
+  </ul>
+
+  <h3>AI and Data</h3>
+  <ul>
+    <li>Upload a spreadsheet &rarr; "What are the top 3 trends?"</li>
+    <li>Paste a table &rarr; "Create a chart showing growth by quarter"</li>
+    <li>Share financial data &rarr; "Summarize this in 5 bullet points for my boss"</li>
+  </ul>
+
+  <h3>Multimodal AI</h3>
+  <table>
+    <tr><th>Old AI</th><th>Multimodal AI</th></tr>
+    <tr><td>A pen pal who can only write letters</td><td>A colleague who can read docs, look at photos, listen to recordings, and respond in any format</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI isn't just a chatbot. It can see, hear, create images, write code, and analyze data. This makes it useful in almost every field.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 6.1 &mdash; Image Understanding</div>
+    <ol>
+      <li>Take a photo of something on your desk</li>
+      <li>Upload it to ChatGPT or Claude</li>
+      <li>Ask: "What is this? Tell me 3 interesting facts about it."</li>
+    </ol>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 6.2 &mdash; Data Analysis</div>
+    <p>Type this to an AI:</p>
+    <div class="prompt-box">"Here are my monthly expenses for 6 months: Jan $3200, Feb $2800, Mar $3500, Apr $3100, May $2900, Jun $3400. Analyze my spending and give me 3 money-saving suggestions."</div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(5)">&larr; Chapter 5</button>
+    <button class="nav-btn primary" onclick="goTo(7)">Chapter 7 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 7 ==================== -->
+<div class="chapter" data-chapter="7">
+  <div class="chapter-label">Chapter 7</div>
+  <h2>AI That Takes Action</h2>
+  <p class="subtitle">Agentic AI &mdash; from advisor to doer.</p>
+
+  <div class="big-idea">Everything so far is AI that <strong>responds</strong>. You ask, it answers. But what if AI could actually <strong>do things</strong> for you &mdash; not just write about tasks, but <strong>complete</strong> them? This is <strong>Agentic AI</strong>.</div>
+
+  <h3>The Assistant Analogy</h3>
+  <table>
+    <tr><th>Regular AI (Advisor)</th><th>Agentic AI (Executive Assistant)</th></tr>
+    <tr><td>"How should I organize this event?"<br>AI: "Here's a plan: book a venue, send invitations..."<br><em>You still do everything</em></td><td>"Organize this event"<br>AI: Books the venue, sends invitations, orders catering, follows up on RSVPs...<br><em>The work gets DONE</em></td></tr>
+  </table>
+
+  <h3>What Makes AI "Agentic"?</h3>
+  <ol>
+    <li><strong>Breaks down complex tasks</strong> into steps</li>
+    <li><strong>Takes actions</strong> &mdash; sends emails, searches databases, creates files</li>
+    <li><strong>Makes decisions</strong> &mdash; if the venue is booked, tries a different one</li>
+    <li><strong>Uses tools</strong> &mdash; accesses the internet, uses software</li>
+    <li><strong>Works autonomously</strong> &mdash; keeps going without micromanagement</li>
+  </ol>
+
+  <div class="example-box">
+    <div class="example-label">Example: Research Report</div>
+    <p><strong>Regular AI:</strong> Writes a report from memory (potentially outdated).</p>
+    <p><strong>Agentic AI:</strong></p>
+    <ol>
+      <li>Searches the internet for competitors' latest news</li>
+      <li>Visits their websites to check current pricing</li>
+      <li>Reads their recent press releases</li>
+      <li>Checks review sites for customer feedback</li>
+      <li>Writes a report with current, accurate information</li>
+      <li>Saves it to your Google Drive</li>
+    </ol>
+  </div>
+
+  <h3>How Agentic AI Works: The Loop</h3>
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">1</span> <strong>PLAN</strong> &mdash; "I need to find competitor pricing"</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">2</span> <strong>ACT</strong> &mdash; Searches the competitor's website</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">3</span> <strong>OBSERVE</strong> &mdash; "The pricing page has changed"</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">4</span> <strong>ADJUST</strong> &mdash; "Let me check other competitors too"</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">5</span> <strong>REPEAT</strong> until the task is complete</div>
+  </div>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Agentic AI shifts from "AI as an advisor" to "AI as a doer." It breaks down complex tasks, uses tools, makes decisions, and delivers completed results.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 7.1 &mdash; Think Like an Agent</div>
+    <p>Pick a task you do regularly at work. Break it into every small step. Then circle which steps an AI agent could do if it had access to your tools.</p>
+    <p><em>Example: "Prepare weekly status report" &rarr; Open last week's report, check project tool, check emails, write summary, list blockers, format, send. Most of these could be automated!</em></p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 7.2 &mdash; Agent vs. Advisor</div>
+    <p>For each scenario, decide: Regular AI (advisor) or Agentic AI (doer)?</p>
+    <ol>
+      <li>"What are good interview questions?" &rarr; <em>Advisor</em></li>
+      <li>"Schedule meetings with all my direct reports next week" &rarr; <em>Agent</em></li>
+      <li>"Explain stocks vs. bonds" &rarr; <em>Advisor</em></li>
+      <li>"Monitor competitors' websites and alert me on pricing changes" &rarr; <em>Agent</em></li>
+      <li>"Rewrite this paragraph professionally" &rarr; <em>Advisor</em></li>
+    </ol>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(6)">&larr; Chapter 6</button>
+    <button class="nav-btn primary" onclick="goTo(8)">Chapter 8 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 8 ==================== -->
+<div class="chapter" data-chapter="8">
+  <div class="chapter-label">Chapter 8</div>
+  <h2>AI Connects to Your World</h2>
+  <p class="subtitle">MCPs and tool use &mdash; giving AI hands to work with.</p>
+
+  <div class="big-idea">For AI to actually <strong>do things</strong>, it needs to <strong>connect</strong> to the tools you use &mdash; email, calendar, databases, files. <strong>MCPs (Model Context Protocol)</strong> are standardized bridges that make this possible.</div>
+
+  <h3>The Translator Analogy</h3>
+  <p>Imagine you hire a brilliant assistant who speaks every language. But they're locked in a soundproof room with no phone, no computer. No matter how smart they are, they can't check your email or look at your calendar.</p>
+  <p><strong>MCPs are like giving that assistant a phone, a computer, and keys to the office.</strong></p>
+
+  <h3>Think of It Like USB Ports</h3>
+  <p>Your computer has USB ports. You can plug in a keyboard, mouse, printer, camera &mdash; each device is different, but they all connect through the same standard port.</p>
+  <p><strong>MCPs are like USB ports for AI.</strong> A standard way to "plug in" to different services:</p>
+
+  <table>
+    <tr><th>MCP Connection</th><th>What It Lets AI Do</th></tr>
+    <tr><td>Gmail MCP</td><td>Read, search, write, and send emails</td></tr>
+    <tr><td>Calendar MCP</td><td>View, create, and modify events</td></tr>
+    <tr><td>Google Drive MCP</td><td>Read, create, and organize documents</td></tr>
+    <tr><td>Slack MCP</td><td>Send messages, read channels</td></tr>
+    <tr><td>Database MCP</td><td>Query and analyze company data</td></tr>
+    <tr><td>Web Search MCP</td><td>Search the internet for current info</td></tr>
+  </table>
+
+  <div class="example-box">
+    <div class="example-label">Example: With and Without MCPs</div>
+    <p><strong>Without MCPs:</strong></p>
+    <p>You: "What meetings do I have tomorrow?"<br>AI: "I'm sorry, I don't have access to your calendar."</p>
+    <p><strong>With MCPs:</strong></p>
+    <p>You: "What meetings do I have tomorrow?"<br>AI: "You have 3 meetings: 9 AM Team standup, 11 AM Client call with Acme Corp, 2 PM 1:1 with your manager. Want me to prepare talking points for the client call?"</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Full Workflow With MCPs</div>
+    <p>You say: "Prepare me for my meeting with Acme Corp tomorrow"</p>
+    <div class="flow">
+      <div class="flow-step"><span class="step-num">1</span> <strong>Calendar MCP</strong> &rarr; Finds meeting details (time, attendees, agenda)</div>
+      <div class="flow-step"><span class="step-num">2</span> <strong>Email MCP</strong> &rarr; Searches recent emails with Acme Corp</div>
+      <div class="flow-step"><span class="step-num">3</span> <strong>CRM MCP</strong> &rarr; Pulls account info, deal status</div>
+      <div class="flow-step"><span class="step-num">4</span> <strong>Drive MCP</strong> &rarr; Finds the proposal you sent last month</div>
+      <div class="flow-step"><span class="step-num">5</span> <strong>Web MCP</strong> &rarr; Checks Acme Corp's latest news</div>
+    </div>
+    <p>Result: A complete briefing with talking points, context from emails, and a heads-up that Acme just announced a new CEO. <strong>All in 30 seconds.</strong></p>
+  </div>
+
+  <h3>Why MCPs Matter</h3>
+  <table>
+    <tr><th>Before MCPs</th><th>After MCPs</th></tr>
+    <tr><td>Each AI + tool combo needs custom coding</td><td>Standard connection works everywhere</td></tr>
+    <tr><td>Only big tech could build integrations</td><td>Anyone can create an MCP server</td></tr>
+    <tr><td>AI tools isolated from your data</td><td>AI seamlessly works with your tools</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>MCPs are bridges connecting AI to the real world &mdash; your email, calendar, files, databases. Without MCPs, AI is a smart brain with no hands. With MCPs, AI becomes a capable assistant that can interact with your tools and get things done.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 8.1 &mdash; Map Your Tools</div>
+    <p>List all software tools you use in a typical work day (email, calendar, Slack, CRM, spreadsheets...). Now imagine AI connected to ALL of them. Write down 3 tasks AI could do for you automatically.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 8.2 &mdash; Design Your Dream Agent</div>
+    <p>If you could build an AI agent with MCPs connected to any tools, what would you have it do? Describe the tools, the task, and how it would save you time.</p>
+    <p><em>Example: "I'd connect it to email, calendar, and CRM. Every morning it would scan emails, update CRM, and prepare a daily briefing with priorities."</em></p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(7)">&larr; Chapter 7</button>
+    <button class="nav-btn primary" onclick="goTo(9)">Chapter 9 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 9 ==================== -->
+<div class="chapter" data-chapter="9">
+  <div class="chapter-label">Chapter 9</div>
+  <h2>Choosing the Right AI</h2>
+  <p class="subtitle">Not all AI tools are the same &mdash; picking the right one for the job.</p>
+
+  <div class="big-idea">AI tools are like vehicles. A sports car, pickup truck, and minivan all drive on roads, but they're built for different purposes. Understanding the differences helps you pick the right tool.</div>
+
+  <h3>The Major AI Models</h3>
+  <table>
+    <tr><th>Model</th><th>Company</th><th>Strengths</th><th>Best For</th></tr>
+    <tr><td><strong>GPT-4o</strong></td><td>OpenAI</td><td>Versatile, huge ecosystem</td><td>General use, creative work</td></tr>
+    <tr><td><strong>Claude</strong></td><td>Anthropic</td><td>Thoughtful, great with long docs</td><td>Analysis, research, writing</td></tr>
+    <tr><td><strong>Gemini</strong></td><td>Google</td><td>Google integration</td><td>Google Workspace users</td></tr>
+    <tr><td><strong>Llama</strong></td><td>Meta</td><td>Free, open-source</td><td>Privacy-conscious users</td></tr>
+    <tr><td><strong>Copilot</strong></td><td>Microsoft</td><td>Built into Office</td><td>Microsoft 365 users</td></tr>
+  </table>
+
+  <h3>Free vs. Paid</h3>
+  <table>
+    <tr><th></th><th>Free Version</th><th>Paid (~$20/month)</th></tr>
+    <tr><td><strong>Access</strong></td><td>Limited daily use</td><td>Unlimited or high limits</td></tr>
+    <tr><td><strong>Model</strong></td><td>Older/smaller model</td><td>Latest, most capable</td></tr>
+    <tr><td><strong>Speed</strong></td><td>Slower when busy</td><td>Priority access</td></tr>
+    <tr><td><strong>Features</strong></td><td>Basic chat</td><td>Images, uploads, tools</td></tr>
+    <tr><td><strong>Best For</strong></td><td>Trying it out</td><td>Daily professional use</td></tr>
+  </table>
+
+  <h3>When to Use AI &mdash; and When Not To</h3>
+  <table>
+    <tr><th>Use AI for</th><th>Don't rely on AI for</th></tr>
+    <tr><td>Drafting emails, reports, presentations</td><td>Critical facts (always verify)</td></tr>
+    <tr><td>Brainstorming ideas</td><td>Legal or medical decisions (consult pros)</td></tr>
+    <tr><td>Explaining complex topics</td><td>Anything needing 100% accuracy</td></tr>
+    <tr><td>Analyzing data</td><td>Very recent events (training cutoff)</td></tr>
+    <tr><td>Learning new topics</td><td>Highly personal/sensitive decisions</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Different AI tools have different strengths. Start free to learn, upgrade to paid when you use it daily. Always verify important facts, and treat AI as a capable assistant &mdash; not an infallible expert.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 9.1 &mdash; Tool Trial</div>
+    <p>Sign up for free accounts on ChatGPT and Claude. Ask both the same question:</p>
+    <div class="prompt-box">"Explain how credit scores work in the US and give me 5 tips to improve mine."</div>
+    <p>Compare: Which was clearer? More detailed? Which tone did you prefer?</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 9.2 &mdash; Right Tool, Right Job</div>
+    <p>Which AI tool would you choose for each task?</p>
+    <ol>
+      <li>Summarizing a 50-page contract</li>
+      <li>Brainstorming product names</li>
+      <li>Writing a Google Sheets formula</li>
+      <li>Creating an image for a presentation</li>
+      <li>Analyzing a CSV with 10,000 rows of sales data</li>
+    </ol>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(8)">&larr; Chapter 8</button>
+    <button class="nav-btn primary" onclick="goTo(10)">Chapter 10 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 10 ==================== -->
+<div class="chapter" data-chapter="10">
+  <div class="chapter-label">Chapter 10</div>
+  <h2>Using AI Responsibly</h2>
+  <p class="subtitle">Limitations, ethics, and best practices &mdash; being the smart human behind the smart machine.</p>
+
+  <div class="big-idea">AI is powerful, but like any powerful tool, it needs to be used responsibly. A chainsaw can build a house or cause harm &mdash; it depends on who's using it and how.</div>
+
+  <h3>The 5 Rules of Responsible AI Use</h3>
+
+  <h4>Rule 1: Verify Important Facts</h4>
+  <p>AI can hallucinate &mdash; generate false information that sounds real. <strong>Always fact-check</strong> anything that matters: statistics, dates, legal requirements, medical info.</p>
+  <p>Think of AI like a very confident intern. Usually right, but you wouldn't sign a contract based solely on what an intern told you.</p>
+
+  <h4>Rule 2: Don't Share Sensitive Information</h4>
+  <p>When you type into AI, that text is sent to servers. Be careful with:</p>
+  <ul>
+    <li>Passwords and login credentials</li>
+    <li>Social security or credit card numbers</li>
+    <li>Confidential business information</li>
+    <li>Personal health information</li>
+  </ul>
+
+  <h4>Rule 3: AI Is a Tool, Not a Replacement for Thinking</h4>
+  <table>
+    <tr><th>Good</th><th>Bad</th></tr>
+    <tr><td>Use AI to draft, then review with your expertise</td><td>Copy AI's output without reading it</td></tr>
+    <tr><td>Use AI to brainstorm, then pick the best ideas</td><td>Let AI make all your decisions</td></tr>
+  </table>
+
+  <h4>Rule 4: Be Transparent</h4>
+  <p>If you use AI to help create something, be honest about it when appropriate. Many organizations have policies about AI disclosure.</p>
+
+  <h4>Rule 5: Understand the Biases</h4>
+  <p>AI learned from human-created text, which contains human biases. Be aware of this, especially when using AI for hiring, evaluations, or decisions affecting people.</p>
+
+  <h3>What AI Can and Cannot Do</h3>
+  <table>
+    <tr><th>AI CAN</th><th>AI CANNOT</th></tr>
+    <tr><td>Generate text quickly</td><td>Guarantee accuracy</td></tr>
+    <tr><td>Follow instructions</td><td>Truly understand meaning</td></tr>
+    <tr><td>Find patterns in data</td><td>Have emotions or empathy</td></tr>
+    <tr><td>Work 24/7</td><td>Replace human judgment</td></tr>
+    <tr><td>Help you think through problems</td><td>Make ethical decisions for you</td></tr>
+  </table>
+
+  <h3>The Human + AI Formula</h3>
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">&plus;</span> <strong>Human Expertise</strong> + <strong>AI Speed</strong> = Superpower</div>
+    <div class="flow-step"><span class="step-num">&plus;</span> You know WHAT needs to be done &rarr; AI helps you DO it faster</div>
+    <div class="flow-step"><span class="step-num">&plus;</span> You provide JUDGMENT &rarr; AI provides SCALE</div>
+    <div class="flow-step"><span class="step-num">&plus;</span> You make the DECISIONS &rarr; AI does the HEAVY LIFTING</div>
+  </div>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI is the most powerful productivity tool since the internet. Use it wisely: verify facts, protect sensitive data, think critically, be transparent, and remember &mdash; AI is your assistant, you're still the boss.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 10.1 &mdash; Fact-Check Challenge</div>
+    <ol>
+      <li>Ask AI: "Tell me 5 facts about the history of [your city]"</li>
+      <li>Verify each fact with a quick Google search</li>
+      <li>Did the AI get everything right? Were any facts slightly off?</li>
+    </ol>
+    <p>This builds the habit of verifying AI outputs.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 10.2 &mdash; Your AI Policy</div>
+    <p>Write a personal "AI use policy" for yourself:</p>
+    <ol>
+      <li>What tasks will I use AI for?</li>
+      <li>What information will I never share with AI?</li>
+      <li>How will I verify AI's outputs?</li>
+      <li>When will I tell others that I used AI?</li>
+    </ol>
+  </div>
+
+  <hr>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Part 1 Complete</div>
+    <p>You now understand the fundamentals of AI. Part 2 takes you hands-on &mdash; building things with AI, coding without coding, and creating real automations.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(9)">&larr; Chapter 9</button>
+    <button class="nav-btn primary" onclick="goTo(11)">Part 2: Hands-On &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 11: VIBE CODING ==================== -->
+<div class="chapter" data-chapter="11">
+  <div class="chapter-label">Chapter 11 &mdash; Part 2: Hands-On</div>
+  <h2>Vibe Coding</h2>
+  <p class="subtitle">Building software by describing what you want &mdash; no programming knowledge needed.</p>
+
+  <div class="big-idea"><strong>Vibe coding</strong> is writing software by having a conversation with AI. You describe what you want in plain English, and AI writes the code for you. You don't need to know any programming language. You just need to know what you want.</div>
+
+  <h3>The Interior Designer Analogy</h3>
+  <p>Imagine you want to renovate your kitchen. You have two options:</p>
+  <table>
+    <tr><th>Traditional Way</th><th>Vibe Coding Way</th></tr>
+    <tr><td>Learn carpentry, plumbing, electrical wiring, tiling, painting. Do everything yourself.</td><td>Hire an interior designer. Tell them: "I want a modern kitchen with white cabinets, a marble island, and warm lighting." They build it for you.</td></tr>
+  </table>
+  <p>Vibe coding is like being the client who describes the vision. AI is the designer + builder who makes it happen. You don't need to know HOW to build it &mdash; you need to know WHAT you want.</p>
+
+  <h3>What Can You Build With Vibe Coding?</h3>
+  <ul>
+    <li><strong>Websites</strong> &mdash; Landing pages, portfolios, blogs</li>
+    <li><strong>Web apps</strong> &mdash; Dashboards, calculators, forms, trackers</li>
+    <li><strong>Automations</strong> &mdash; Scripts that process data, send emails, generate reports</li>
+    <li><strong>Chrome extensions</strong> &mdash; Custom browser tools</li>
+    <li><strong>Data tools</strong> &mdash; Spreadsheet analyzers, chart generators</li>
+    <li><strong>Internal tools</strong> &mdash; CRM dashboards, inventory trackers, onboarding checklists</li>
+  </ul>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building a Customer ROI Calculator</div>
+    <p>You tell AI:</p>
+    <div class="prompt-box">"Build me a web-based ROI calculator. The user inputs their current monthly spend on manual processes, number of employees, and hours saved per week. It should calculate annual savings and show a nice chart. Make it look professional with a clean, modern design."</div>
+    <p>AI writes all the HTML, CSS, and JavaScript. You open the file in your browser and you have a working calculator. The entire process takes about 5 minutes.</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building an Expense Tracker</div>
+    <p>You tell AI:</p>
+    <div class="prompt-box">"Create a personal expense tracker web app. I want to add expenses with a date, category (food, transport, entertainment, bills), and amount. Show me a running total and a pie chart of spending by category. Save the data in the browser so I don't lose it when I close the tab."</div>
+    <p>5 minutes later, you have a fully functional expense tracker.</p>
+  </div>
+
+  <h3>The Vibe Coding Process</h3>
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">1</span> <strong>DESCRIBE</strong> what you want in plain English</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">2</span> AI <strong>WRITES</strong> the code</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">3</span> You <strong>TEST</strong> it (open in browser, run it)</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">4</span> You <strong>REFINE</strong> &mdash; "Make the button bigger" / "Add a dark mode" / "Fix this bug"</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">5</span> <strong>REPEAT</strong> until it's exactly what you want</div>
+  </div>
+
+  <h3>Why This Matters</h3>
+  <p>Before vibe coding, if you had an idea for a tool, you had three options:</p>
+  <ol>
+    <li><strong>Learn to code</strong> (months/years of study)</li>
+    <li><strong>Hire a developer</strong> ($50-200/hour, weeks of back-and-forth)</li>
+    <li><strong>Give up</strong> on the idea</li>
+  </ol>
+  <p>Now there's a fourth option: <strong>describe it to AI and have it built in minutes</strong>.</p>
+
+  <h3>Tips for Effective Vibe Coding</h3>
+  <ul>
+    <li><strong>Start simple</strong> &mdash; Get a basic version working first, then add features one at a time</li>
+    <li><strong>Be specific about what you see</strong> &mdash; "A blue button in the top-right corner" is better than "add a button somewhere"</li>
+    <li><strong>Test after every change</strong> &mdash; Don't ask for 10 features at once. Add one, test, add the next</li>
+    <li><strong>Use screenshots</strong> &mdash; If something looks wrong, take a screenshot and show AI: "This doesn't look right, the chart is overlapping the text"</li>
+    <li><strong>Iterate, don't restart</strong> &mdash; If something is 80% right, refine it. Don't start over</li>
+  </ul>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Vibe coding lets anyone build software by describing what they want in plain English. You don't need to learn programming &mdash; you need to learn to describe your vision clearly. The AI handles the technical implementation.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 11.1 &mdash; Your First Vibe Code</div>
+    <p>Go to ChatGPT or Claude and type:</p>
+    <div class="prompt-box">"Create a single HTML file for a personal to-do list. I should be able to add tasks, mark them complete (with a strikethrough), and delete them. Make it look clean and modern. Save tasks in localStorage so they persist."</div>
+    <p>Copy the code AI gives you, save it as <code>todo.html</code> on your desktop, and open it in your browser. You just built an app!</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 11.2 &mdash; Refine It</div>
+    <p>Take the to-do list from Exercise 11.1 and ask AI to improve it:</p>
+    <ol>
+      <li>"Add categories: Work, Personal, Shopping"</li>
+      <li>"Add a filter to show only incomplete tasks"</li>
+      <li>"Make it look like an iPhone app"</li>
+    </ol>
+    <p>Notice how each refinement makes it better without starting over.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(10)">&larr; Chapter 10</button>
+    <button class="nav-btn primary" onclick="goTo(12)">Chapter 12 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 12: AI CODING TOOLS ==================== -->
+<div class="chapter" data-chapter="12">
+  <div class="chapter-label">Chapter 12</div>
+  <h2>AI Coding Tools</h2>
+  <p class="subtitle">Claude Code, Cursor, GitHub Copilot, Replit &mdash; the tools that turn you into a builder.</p>
+
+  <div class="big-idea">In Chapter 11, you copy-pasted code from a chat window. That works, but specialized <strong>AI coding tools</strong> take it much further &mdash; they work directly with your files, run your code, fix errors, and build entire projects.</div>
+
+  <h3>The Tool Belt Analogy</h3>
+  <p>Think of ChatGPT/Claude chat as a <strong>phone call with a contractor</strong>. They tell you what to do, but you have to do it yourself (copy-paste code, create files, fix errors manually).</p>
+  <p>AI coding tools are like the <strong>contractor showing up at your house with their own tools</strong>. They work directly on your project &mdash; creating files, editing code, running tests, fixing bugs &mdash; while you supervise.</p>
+
+  <h3>The Major AI Coding Tools</h3>
+  <table>
+    <tr><th>Tool</th><th>What It Is</th><th>Best For</th><th>Skill Level</th></tr>
+    <tr><td><strong>Claude Code</strong></td><td>Anthropic's command-line AI assistant</td><td>Building full projects, automations, complex apps</td><td>Beginner-friendly with guidance</td></tr>
+    <tr><td><strong>Cursor</strong></td><td>AI-powered code editor</td><td>Writing and editing code with AI alongside you</td><td>Some comfort with code editors</td></tr>
+    <tr><td><strong>GitHub Copilot</strong></td><td>AI autocomplete for code</td><td>Speeding up developers who already code</td><td>Need coding experience</td></tr>
+    <tr><td><strong>Replit Agent</strong></td><td>Browser-based AI builder</td><td>Quick prototypes, no installation needed</td><td>Complete beginners</td></tr>
+    <tr><td><strong>v0 by Vercel</strong></td><td>AI UI builder</td><td>Creating beautiful web interfaces</td><td>Complete beginners</td></tr>
+    <tr><td><strong>Bolt / Lovable</strong></td><td>Full-stack AI builders</td><td>Building complete web apps in browser</td><td>Complete beginners</td></tr>
+  </table>
+
+  <h3>Deep Dive: Claude Code</h3>
+  <p>Claude Code is Anthropic's CLI (command-line interface) tool. Think of it as having a senior developer sitting next to you in your terminal. You tell it what to build, and it:</p>
+  <ul>
+    <li><strong>Creates files</strong> &mdash; HTML, CSS, JavaScript, Python, anything</li>
+    <li><strong>Reads your existing code</strong> &mdash; Understands your whole project</li>
+    <li><strong>Edits files</strong> &mdash; Makes targeted changes without breaking things</li>
+    <li><strong>Runs commands</strong> &mdash; Installs packages, starts servers, runs tests</li>
+    <li><strong>Fixes errors</strong> &mdash; When something breaks, it reads the error and fixes it</li>
+    <li><strong>Connects to services</strong> &mdash; APIs, databases, email via MCPs</li>
+  </ul>
+
+  <div class="example-box">
+    <div class="example-label">Example: Building a Dashboard with Claude Code</div>
+    <p>You open your terminal and type:</p>
+    <div class="prompt-box">claude "Build me a sales dashboard that reads from a CSV file and shows total revenue, top customers, and a monthly trend chart. Use Python for the backend and HTML for the frontend."</div>
+    <p>Claude Code:</p>
+    <ol>
+      <li>Creates <code>server.py</code> with the backend logic</li>
+      <li>Creates <code>index.html</code> with a beautiful dashboard</li>
+      <li>Creates a sample <code>sales_data.csv</code> for testing</li>
+      <li>Starts the server for you</li>
+      <li>You open your browser and see the working dashboard</li>
+    </ol>
+    <p>If something doesn't look right, you just say: <em>"Make the chart bars blue instead of red"</em> and it edits the file directly.</p>
+  </div>
+
+  <h3>Deep Dive: Cursor</h3>
+  <p>Cursor is a code editor (like Microsoft Word, but for code) with AI built in. As you type, AI suggests code. You can also select code and ask AI to modify it. It's like having autocomplete that understands entire programs, not just words.</p>
+
+  <h3>Deep Dive: Replit Agent</h3>
+  <p>Replit runs entirely in your browser &mdash; nothing to install. You describe what you want, and it builds and hosts the app for you. You can share a link with anyone immediately.</p>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI coding tools go beyond chat &mdash; they work directly with your files, run code, fix bugs, and build projects. Claude Code is the most powerful for complex projects. Replit and Bolt are easiest for beginners. Pick the tool that matches your comfort level.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 12.1 &mdash; Try a Browser-Based Builder</div>
+    <p>Go to <strong>replit.com</strong> and sign up for a free account. Use the AI agent to build:</p>
+    <div class="prompt-box">"A simple quiz app with 5 questions about world geography. Multiple choice, show the score at the end, and let the user retry."</div>
+    <p>Notice: you didn't write a single line of code.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 12.2 &mdash; Compare the Experience</div>
+    <p>Try building the same quiz app using ChatGPT/Claude chat (copy-paste approach) vs. a tool like Replit Agent. Compare: Which was faster? Which was easier to iterate on?</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(11)">&larr; Chapter 11</button>
+    <button class="nav-btn primary" onclick="goTo(13)">Chapter 13 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 13: BUILD YOUR FIRST APP ==================== -->
+<div class="chapter" data-chapter="13">
+  <div class="chapter-label">Chapter 13</div>
+  <h2>Build Your First App</h2>
+  <p class="subtitle">A step-by-step walkthrough of building a real, useful web application with AI.</p>
+
+  <div class="big-idea">Theory is great, but the best way to learn is to <strong>build something real</strong>. In this chapter, you'll build a <strong>Meeting Notes Organizer</strong> &mdash; a web app where you paste messy meeting notes and AI cleans them up into structured action items.</div>
+
+  <h3>What We're Building</h3>
+  <ul>
+    <li>A single-page web app that runs in your browser</li>
+    <li>A text area where you paste raw meeting notes</li>
+    <li>A button that sends the notes to AI for processing</li>
+    <li>AI returns: a summary, action items with owners, key decisions, and follow-up dates</li>
+    <li>A clean, printable output you can share with your team</li>
+  </ul>
+
+  <h3>Step-by-Step: The Build Process</h3>
+
+  <h4>Step 1: Describe the big picture</h4>
+  <div class="prompt-box">"I want to build a Meeting Notes Organizer. It's a single HTML file I can open in my browser. There's a text area where I paste messy meeting notes. When I click 'Organize', it processes the notes and shows: a 2-3 sentence summary, a list of action items (with who is responsible), key decisions made, and any follow-up dates mentioned. Make it look professional and clean."</div>
+
+  <h4>Step 2: Test the first version</h4>
+  <p>Save the code AI gives you. Open it in your browser. Paste some sample meeting notes and see what happens. Does it work? What's missing?</p>
+
+  <h4>Step 3: Refine iteratively</h4>
+  <div class="prompt-box">"The action items don't have checkboxes. Add checkboxes so I can mark them done."</div>
+  <div class="prompt-box">"Add a 'Copy to Clipboard' button so I can paste the organized notes into Slack."</div>
+  <div class="prompt-box">"The design is too plain. Make it look more polished &mdash; add some color, better spacing, and a nice header."</div>
+
+  <h4>Step 4: Add advanced features</h4>
+  <div class="prompt-box">"Save the last 10 sets of organized notes in localStorage so I can go back to previous meetings."</div>
+  <div class="prompt-box">"Add an 'Export as PDF' button."</div>
+
+  <h3>Common Beginner Mistakes</h3>
+  <table>
+    <tr><th>Mistake</th><th>Better Approach</th></tr>
+    <tr><td>Asking for everything at once</td><td>Start simple, add features one by one</td></tr>
+    <tr><td>Not testing between changes</td><td>Test after every change to catch issues early</td></tr>
+    <tr><td>Starting over when something breaks</td><td>Show the error to AI: "I get this error when I click the button: [error]"</td></tr>
+    <tr><td>Being too vague</td><td>Be specific: "Blue button, top-right corner, 40px tall"</td></tr>
+    <tr><td>Giving up after first failure</td><td>Errors are normal! AI can debug them too</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Building an app with AI follows a simple loop: describe, test, refine. Start with a minimal version, test it, then add features incrementally. Don't be afraid of errors &mdash; show them to AI and it will fix them.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 13.1 &mdash; Build the Meeting Notes Organizer</div>
+    <p>Follow the steps above and actually build this app. Use ChatGPT, Claude, or any AI tool. You should have a working app within 15-20 minutes.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 13.2 &mdash; Build Your Own Idea</div>
+    <p>Think of a simple tool that would help you in your daily life or work. Build it! Some ideas:</p>
+    <ul>
+      <li>A daily journal with mood tracking</li>
+      <li>A recipe scaler (input serves 4, output serves 7)</li>
+      <li>A habit tracker with a weekly heatmap</li>
+      <li>A client meeting prep checklist</li>
+    </ul>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(12)">&larr; Chapter 12</button>
+    <button class="nav-btn primary" onclick="goTo(14)">Chapter 14 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 14: SYSTEM PROMPTS ==================== -->
+<div class="chapter" data-chapter="14">
+  <div class="chapter-label">Chapter 14</div>
+  <h2>System Prompts &amp; Custom Instructions</h2>
+  <p class="subtitle">How to configure AI's personality, knowledge, and behavior &mdash; and what CLAUDE.md is.</p>
+
+  <div class="big-idea">A <strong>system prompt</strong> is like a job description for AI. Before the conversation starts, it tells the AI who it should be, what it knows, and how it should behave. It's the difference between talking to a generic assistant and talking to YOUR specialized assistant.</div>
+
+  <h3>The New Employee Analogy</h3>
+  <p>When you hire a new employee, you don't just say "Go work." You give them:</p>
+  <ul>
+    <li>A <strong>job description</strong> &mdash; what their role is</li>
+    <li>A <strong>company handbook</strong> &mdash; how things work here</li>
+    <li><strong>Context</strong> about your team, products, customers</li>
+    <li><strong>Guidelines</strong> &mdash; what to do and what NOT to do</li>
+  </ul>
+  <p>A system prompt does the same thing for AI.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: Generic AI vs. Configured AI</div>
+    <p><strong>Without system prompt:</strong></p>
+    <p>You: "Review this email draft"<br>AI: Gives generic feedback</p>
+    <p><strong>With system prompt:</strong></p>
+    <div class="prompt-box">System: "You are a communications specialist at a B2B SaaS company selling to enterprise healthcare clients. Our tone is professional but warm. We never use jargon. We always lead with the customer's pain point, not our features. Our company name is MedFlow."</div>
+    <p>You: "Review this email draft"<br>AI: Gives feedback specific to your company's style, audience, and communication guidelines</p>
+  </div>
+
+  <h3>Custom Instructions in ChatGPT &amp; Claude</h3>
+  <p>Both ChatGPT and Claude let you set permanent custom instructions that apply to every conversation:</p>
+  <ul>
+    <li><strong>ChatGPT:</strong> Settings &rarr; Personalization &rarr; Custom Instructions</li>
+    <li><strong>Claude:</strong> Settings &rarr; Profile &rarr; Custom instructions</li>
+  </ul>
+
+  <div class="example-box">
+    <div class="example-label">Example: Useful Custom Instructions</div>
+    <div class="prompt-box">"I'm a product marketing manager at a B2B SaaS company (Series B, 200 employees). I work with sales teams, create content, and do competitive analysis. When I ask for writing help, match a professional but conversational tone. Give me practical, actionable advice &mdash; not theory. I prefer bullet points over long paragraphs. If I ask about data, show it in tables."</div>
+    <p>Now EVERY conversation with this AI is tailored to your role.</p>
+  </div>
+
+  <h3>CLAUDE.md &mdash; Project-Level Instructions</h3>
+  <p>When using <strong>Claude Code</strong>, you can create a file called <code>CLAUDE.md</code> in your project folder. It's like a permanent system prompt for that specific project.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: A CLAUDE.md File</div>
+    <div class="prompt-box"># My Marketing Website
+
+## What this is
+A landing page for our product targeting healthcare CTOs.
+
+## Stack
+- HTML + CSS + JavaScript
+- No frameworks, single HTML file
+
+## Conventions
+- Use professional but warm tone
+- Always include a clear call-to-action
+- Colors: navy (#1B2A4A), white, accent blue (#3B82F6)
+- Font: Inter from Google Fonts</div>
+    <p>Now every time you use Claude Code in this project, it automatically knows the context, tech stack, and design rules. You never have to repeat this information.</p>
+  </div>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>System prompts turn generic AI into YOUR personalized assistant. Custom instructions apply across conversations. CLAUDE.md files give project-specific context to Claude Code. The more context you give AI upfront, the less you have to explain in every conversation.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 14.1 &mdash; Set Up Custom Instructions</div>
+    <p>Go to ChatGPT or Claude settings and write custom instructions describing:</p>
+    <ul>
+      <li>Your job role and industry</li>
+      <li>How you like answers formatted</li>
+      <li>Your communication style preference</li>
+      <li>Any specific knowledge AI should assume you have (or don't have)</li>
+    </ul>
+    <p>Then have a conversation and notice how the responses are different.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 14.2 &mdash; Write a CLAUDE.md</div>
+    <p>Pick any project (real or imagined) and write a CLAUDE.md file for it. Include: what the project is, who it's for, tech stack, design guidelines, and any rules AI should follow.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(13)">&larr; Chapter 13</button>
+    <button class="nav-btn primary" onclick="goTo(15)">Chapter 15 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 15: SKILLS & EXTENSIONS ==================== -->
+<div class="chapter" data-chapter="15">
+  <div class="chapter-label">Chapter 15</div>
+  <h2>Skills &amp; Extensions</h2>
+  <p class="subtitle">Teaching AI new abilities &mdash; custom skills, plugins, GPTs, and more.</p>
+
+  <div class="big-idea">Out of the box, AI is a generalist &mdash; it knows a little about everything. <strong>Skills and extensions</strong> turn it into a specialist. They're like installing new apps on your phone to give it new capabilities.</div>
+
+  <h3>The Smartphone Analogy</h3>
+  <p>When you buy a new phone, it comes with basic apps &mdash; phone, camera, messages. But you install apps to make it do more: banking, maps, fitness tracking, food delivery.</p>
+  <p><strong>Skills and extensions are apps for AI.</strong> They add specialized knowledge and capabilities.</p>
+
+  <h3>Types of AI Extensions</h3>
+  <table>
+    <tr><th>Type</th><th>Platform</th><th>What It Does</th></tr>
+    <tr><td><strong>Custom GPTs</strong></td><td>ChatGPT</td><td>Pre-configured AI with specific instructions, knowledge, and tools</td></tr>
+    <tr><td><strong>Claude Projects</strong></td><td>Claude</td><td>AI with uploaded documents and custom instructions for a specific task</td></tr>
+    <tr><td><strong>Skills</strong></td><td>Claude Code</td><td>Installable packages that give Claude Code specialized knowledge and scripts</td></tr>
+    <tr><td><strong>Gems</strong></td><td>Gemini</td><td>Customized Gemini assistants with specific expertise</td></tr>
+    <tr><td><strong>MCP Servers</strong></td><td>Various</td><td>Plugins that connect AI to external services (see Chapter 8)</td></tr>
+  </table>
+
+  <div class="example-box">
+    <div class="example-label">Example: A Competitive Analysis Skill</div>
+    <p>Without a skill, you'd say: "Analyze my competitor's website" and get a generic analysis.</p>
+    <p>With a competitive analysis skill installed, AI:</p>
+    <ul>
+      <li>Knows your company's specific positioning</li>
+      <li>Has your competitor list pre-loaded</li>
+      <li>Uses a structured framework (pricing, features, messaging, SEO)</li>
+      <li>Outputs in your company's preferred report format</li>
+      <li>Includes scripts that automatically pull competitor data from the web</li>
+    </ul>
+    <p>The skill transforms AI from a general assistant into a specialized competitive intelligence analyst.</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: A Custom GPT for Content Review</div>
+    <p>You create a Custom GPT called "Brand Voice Checker" with these instructions:</p>
+    <div class="prompt-box">"You are a brand voice editor for AcmeTech. Our tone is confident but not arrogant, technical but accessible, always customer-focused. Never use: 'synergy', 'leverage', 'disrupt', 'best-in-class'. Always use active voice. Sentences should be under 20 words. When reviewing content, flag violations and suggest rewrites."</div>
+    <p>Now anyone on your team can run content through this GPT and get consistent brand voice feedback, without needing a human editor every time.</p>
+  </div>
+
+  <h3>Claude Code Skills</h3>
+  <p>Skills for Claude Code are packages that include:</p>
+  <ul>
+    <li><strong>Instructions</strong> &mdash; How to handle specific tasks</li>
+    <li><strong>Scripts</strong> &mdash; Ready-to-run code for common operations</li>
+    <li><strong>References</strong> &mdash; Domain knowledge (schemas, APIs, templates)</li>
+    <li><strong>Assets</strong> &mdash; Templates, images, fonts to use in output</li>
+  </ul>
+  <p>You install them with a command, and Claude Code automatically uses them when relevant.</p>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Skills and extensions turn general-purpose AI into specialized tools. Custom GPTs, Claude Projects, and Claude Code Skills let you encode your specific workflows, knowledge, and standards so AI consistently produces the right output for your needs.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 15.1 &mdash; Create a Custom GPT or Claude Project</div>
+    <p>Pick a task you do repeatedly. Create a Custom GPT (ChatGPT) or a Claude Project with custom instructions for that task. Test it with 3 different inputs and see if it consistently produces good results.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 15.2 &mdash; Explore the GPT Store</div>
+    <p>Visit the ChatGPT GPT Store and browse the top-rated GPTs. Install 2-3 that look useful for your work. Try them and note: How are they different from regular ChatGPT? What makes them more useful?</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(14)">&larr; Chapter 14</button>
+    <button class="nav-btn primary" onclick="goTo(16)">Chapter 16 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 16: APIs ==================== -->
+<div class="chapter" data-chapter="16">
+  <div class="chapter-label">Chapter 16</div>
+  <h2>APIs &amp; Integrations</h2>
+  <p class="subtitle">How software talks to other software &mdash; and why this matters for AI.</p>
+
+  <div class="big-idea">An <strong>API</strong> (Application Programming Interface) is how software programs talk to each other. When you use Uber, the app uses APIs to talk to the maps service, the payment system, and the driver's phone. Understanding APIs helps you understand how AI connects to the world.</div>
+
+  <h3>The Restaurant Waiter Analogy</h3>
+  <p>You're sitting at a restaurant. The kitchen can make food, and you want food, but you can't walk into the kitchen yourself. The <strong>waiter</strong> takes your order, brings it to the kitchen, and brings the food back to you.</p>
+  <p><strong>An API is the waiter.</strong> It's the messenger between two systems that need to exchange information.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: APIs You Already Use</div>
+    <table>
+      <tr><th>When You...</th><th>APIs Are Working Behind the Scenes</th></tr>
+      <tr><td>Check weather on your phone</td><td>Your app calls a weather API to get current data</td></tr>
+      <tr><td>Pay with Apple Pay</td><td>Your phone calls your bank's API to process payment</td></tr>
+      <tr><td>See a Google Map on a website</td><td>The website calls Google Maps API to embed the map</td></tr>
+      <tr><td>Log in with "Sign in with Google"</td><td>The website calls Google's authentication API</td></tr>
+    </table>
+  </div>
+
+  <h3>AI APIs</h3>
+  <p>When you use ChatGPT or Claude through their website, you're using a nice interface. But underneath, there's an API that anyone can use to build their own AI-powered applications.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: AI API in Action</div>
+    <p>The Gong Dashboard we could build using AI + APIs:</p>
+    <ol>
+      <li>Your app calls the <strong>Gong API</strong> to get today's call data</li>
+      <li>Your app calls the <strong>Claude API</strong> to analyze and format the data</li>
+      <li>The formatted report appears in your browser</li>
+    </ol>
+    <p>No human had to manually pull data from Gong, analyze it, and create a report. The APIs automated the entire workflow.</p>
+  </div>
+
+  <h3>Why APIs Matter for Non-Developers</h3>
+  <p>You don't need to code APIs yourself. But understanding them helps you:</p>
+  <ul>
+    <li><strong>Communicate with developers</strong> &mdash; "Can we use the Salesforce API to pull deal data into our AI tool?"</li>
+    <li><strong>Understand what's possible</strong> &mdash; If a service has an API, AI can probably connect to it</li>
+    <li><strong>Use no-code tools</strong> &mdash; Tools like Zapier and Make use APIs behind the scenes with visual interfaces</li>
+    <li><strong>Vibe-code integrations</strong> &mdash; Ask AI to build tools that connect to APIs for you</li>
+  </ul>
+
+  <h3>API Keys &mdash; Your Access Pass</h3>
+  <p>Most APIs require an <strong>API key</strong> &mdash; like a password that identifies you and controls your access. Think of it like a key card to an office building. You need it to get in, and it tracks who's using the building.</p>
+  <p><strong>Important:</strong> Never share your API keys publicly. Treat them like passwords.</p>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>APIs are how software talks to software. AI APIs let you build custom AI-powered applications. You don't need to be a developer to benefit &mdash; understanding APIs helps you see what's possible and communicate with those who build them.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 16.1 &mdash; API Scavenger Hunt</div>
+    <p>For 3 tools you use at work (CRM, email, project management), Google "[tool name] API" and answer: Does it have an API? What can you do with it? Is there documentation?</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 16.2 &mdash; No-Code API Connection</div>
+    <p>Sign up for <strong>Zapier</strong> (free tier). Create a simple "Zap" that connects two services &mdash; like "When I receive an email with an attachment, save it to Google Drive." This is using APIs without writing code.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(15)">&larr; Chapter 15</button>
+    <button class="nav-btn primary" onclick="goTo(17)">Chapter 17 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 17: RAG ==================== -->
+<div class="chapter" data-chapter="17">
+  <div class="chapter-label">Chapter 17</div>
+  <h2>RAG: AI + Your Data</h2>
+  <p class="subtitle">Retrieval Augmented Generation &mdash; teaching AI about YOUR specific information.</p>
+
+  <div class="big-idea"><strong>RAG</strong> (Retrieval Augmented Generation) is a technique where AI <strong>retrieves</strong> relevant information from your documents before <strong>generating</strong> a response. It's like giving AI a cheat sheet of your company's knowledge before it answers your question.</div>
+
+  <h3>The Open-Book Exam Analogy</h3>
+  <table>
+    <tr><th>Regular AI</th><th>AI with RAG</th></tr>
+    <tr><td>A student taking a <strong>closed-book exam</strong>. They can only use what they memorized (training data). If they didn't study a topic, they guess.</td><td>A student taking an <strong>open-book exam</strong>. They have your company's documents right there. They look up the answer before responding.</td></tr>
+  </table>
+
+  <h3>Why RAG Matters</h3>
+  <p>Regular AI was trained on public internet data. It doesn't know about:</p>
+  <ul>
+    <li>Your company's products, pricing, or processes</li>
+    <li>Your internal documentation or policies</li>
+    <li>Your customer data or sales playbooks</li>
+    <li>Your proprietary research or reports</li>
+  </ul>
+  <p>RAG lets you give AI access to this information so it can answer questions accurately.</p>
+
+  <div class="example-box">
+    <div class="example-label">Example: Customer Support with RAG</div>
+    <p><strong>Without RAG:</strong></p>
+    <p>Customer asks: "How do I set up SSO in your product?"<br>AI: Gives a generic answer about SSO that may not match your product at all.</p>
+    <p><strong>With RAG:</strong></p>
+    <p>AI retrieves your product's SSO documentation, then answers with accurate, step-by-step instructions specific to your product, including screenshots references and known gotchas.</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Sales Enablement with RAG</div>
+    <p>You upload to AI: your battlecards, pricing sheets, case studies, product docs, and competitor analyses.</p>
+    <p>Now you can ask:</p>
+    <ul>
+      <li>"How do we compare to Competitor X on pricing?"</li>
+      <li>"What case study should I use for a healthcare prospect?"</li>
+      <li>"What are the top 3 objections from enterprise prospects and how do we handle them?"</li>
+    </ul>
+    <p>AI retrieves the relevant documents and gives you accurate, company-specific answers.</p>
+  </div>
+
+  <h3>How RAG Works (Simplified)</h3>
+  <div class="flow">
+    <div class="flow-step"><span class="step-num">1</span> <strong>UPLOAD</strong> your documents (PDFs, docs, web pages)</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">2</span> AI <strong>CHUNKS</strong> them into searchable pieces</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">3</span> You ask a <strong>QUESTION</strong></div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">4</span> AI <strong>RETRIEVES</strong> the most relevant chunks</div>
+    <div class="flow-arrow">&darr;</div>
+    <div class="flow-step"><span class="step-num">5</span> AI <strong>GENERATES</strong> an answer using those chunks as context</div>
+  </div>
+
+  <h3>Tools That Use RAG</h3>
+  <table>
+    <tr><th>Tool</th><th>How It Does RAG</th></tr>
+    <tr><td><strong>Claude Projects</strong></td><td>Upload files to a project, AI references them in conversation</td></tr>
+    <tr><td><strong>ChatGPT with file uploads</strong></td><td>Upload documents and ask questions about them</td></tr>
+    <tr><td><strong>NotebookLM</strong></td><td>Google's tool for analyzing uploaded documents</td></tr>
+    <tr><td><strong>Custom apps</strong></td><td>Build your own RAG system with AI APIs + a vector database</td></tr>
+  </table>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>RAG gives AI access to YOUR specific documents and data. It's the difference between AI that knows general information and AI that knows YOUR company's information. This is how businesses make AI truly useful for their specific needs.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 17.1 &mdash; Try RAG Yourself</div>
+    <p>Go to Claude.ai, create a Project, and upload a document you work with (a product guide, FAQ, policy document). Then ask questions about it. Notice how the answers reference YOUR specific document.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 17.2 &mdash; Identify RAG Opportunities</div>
+    <p>List 3 sets of documents at your company that would be valuable if AI could search and reference them. For each one, write 3 questions someone might ask that AI could answer with RAG.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(16)">&larr; Chapter 16</button>
+    <button class="nav-btn primary" onclick="goTo(18)">Chapter 18 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 18: BUILDING AI AGENTS ==================== -->
+<div class="chapter" data-chapter="18">
+  <div class="chapter-label">Chapter 18</div>
+  <h2>Building AI Agents</h2>
+  <p class="subtitle">Creating automated workflows that work for you around the clock.</p>
+
+  <div class="big-idea">In Chapter 7 we explained what agentic AI is. Now let's talk about <strong>building</strong> AI agents. Thanks to vibe coding (Chapter 11) and APIs (Chapter 16), you can actually create agents that automate your workflows &mdash; even without being a developer.</div>
+
+  <h3>What an AI Agent Actually Looks Like</h3>
+  <p>An AI agent is just a program that:</p>
+  <ol>
+    <li>Receives a trigger (time-based, event-based, or manual)</li>
+    <li>Calls an AI model to decide what to do</li>
+    <li>Takes actions using APIs</li>
+    <li>Checks the results</li>
+    <li>Repeats or stops</li>
+  </ol>
+
+  <div class="example-box">
+    <div class="example-label">Example: Daily Sales Digest Agent</div>
+    <p>An agent that runs every morning at 7 AM:</p>
+    <ol>
+      <li><strong>Trigger:</strong> Scheduled at 7 AM daily</li>
+      <li><strong>Fetch:</strong> Pulls yesterday's calls from Gong API</li>
+      <li><strong>Fetch:</strong> Pulls deal updates from Salesforce API</li>
+      <li><strong>Analyze:</strong> Sends the data to Claude API for analysis</li>
+      <li><strong>Format:</strong> Claude creates a formatted digest</li>
+      <li><strong>Deliver:</strong> Posts the digest to a Slack channel</li>
+    </ol>
+    <p>Your sales team gets a beautiful daily briefing without anyone lifting a finger.</p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example: Content Repurposing Agent</div>
+    <p>An agent triggered when you publish a blog post:</p>
+    <ol>
+      <li><strong>Trigger:</strong> New blog post published</li>
+      <li><strong>Read:</strong> Fetches the blog content</li>
+      <li><strong>Generate:</strong> Creates 5 LinkedIn posts, 10 tweets, an email newsletter blurb</li>
+      <li><strong>Create:</strong> Generates a social media image</li>
+      <li><strong>Queue:</strong> Schedules posts across platforms</li>
+    </ol>
+  </div>
+
+  <h3>Building Agents: Three Approaches</h3>
+  <table>
+    <tr><th>Approach</th><th>Difficulty</th><th>Tools</th><th>Best For</th></tr>
+    <tr><td><strong>No-Code</strong></td><td>Easiest</td><td>Zapier, Make, n8n</td><td>Simple automations with existing tools</td></tr>
+    <tr><td><strong>Vibe-Coded</strong></td><td>Medium</td><td>Claude Code, ChatGPT</td><td>Custom agents tailored to your needs</td></tr>
+    <tr><td><strong>Developer-Built</strong></td><td>Hardest</td><td>Python, LangChain, custom code</td><td>Complex, production-grade agents</td></tr>
+  </table>
+
+  <h3>Vibe-Coding an Agent</h3>
+  <p>You can ask Claude Code to build an agent for you:</p>
+  <div class="prompt-box">"Build me a Python script that runs every morning, queries the Gong API for yesterday's calls, sends the data to the Claude API for analysis, and posts a formatted summary to Slack. Use environment variables for API keys."</div>
+  <p>Claude Code will create the script, help you set up the API keys, and test it. You just describe what you want the agent to do.</p>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI agents are programs that combine triggers, AI models, and APIs to automate workflows. You can build them with no-code tools for simple tasks, or vibe-code custom agents for complex needs. The key is identifying repetitive tasks that follow a predictable pattern.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 18.1 &mdash; Agent Design</div>
+    <p>Design an AI agent for your work (don't build it yet, just plan it). Answer:</p>
+    <ul>
+      <li>What trigger starts it? (Time? Event? Manual?)</li>
+      <li>What data does it need? (What APIs?)</li>
+      <li>What should AI do with the data? (Analyze? Summarize? Decide?)</li>
+      <li>What action should it take? (Send email? Post to Slack? Update spreadsheet?)</li>
+    </ul>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 18.2 &mdash; No-Code Agent</div>
+    <p>Build a simple agent using Zapier (free tier):</p>
+    <div class="prompt-box">Trigger: When a new email arrives with "invoice" in the subject
+Action: Send a Slack message to #finance channel with the sender and subject line</div>
+    <p>This takes about 5 minutes and gives you a taste of agent-building.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(17)">&larr; Chapter 17</button>
+    <button class="nav-btn primary" onclick="goTo(19)">Chapter 19 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 19: AI AT WORK ==================== -->
+<div class="chapter" data-chapter="19">
+  <div class="chapter-label">Chapter 19</div>
+  <h2>AI at Work: Daily Playbook</h2>
+  <p class="subtitle">Practical ways to use AI every single day &mdash; your productivity multiplier.</p>
+
+  <div class="big-idea">The biggest mistake people make with AI is treating it as a novelty instead of a <strong>daily tool</strong>. This chapter is your practical playbook &mdash; specific ways to use AI for common work tasks, starting from the moment you open your laptop.</div>
+
+  <h3>The Morning Routine</h3>
+  <table>
+    <tr><th>Time</th><th>Task</th><th>AI Use</th></tr>
+    <tr><td>8:00 AM</td><td>Review emails</td><td>"Summarize these 15 emails and flag which need my response today"</td></tr>
+    <tr><td>8:15 AM</td><td>Prep for meeting</td><td>"I'm meeting with [client]. Summarize our last 3 interactions and suggest talking points"</td></tr>
+    <tr><td>8:30 AM</td><td>Plan the day</td><td>"Here are my tasks for today. Help me prioritize and create a time-blocked schedule"</td></tr>
+  </table>
+
+  <h3>AI for Email</h3>
+  <div class="prompt-box">"Draft a reply to this email. Be professional but firm.
+Decline the meeting but suggest an alternative time next week.
+Keep it under 4 sentences."</div>
+
+  <h3>AI for Meetings</h3>
+  <ul>
+    <li><strong>Before:</strong> "Create an agenda for a 30-min project kickoff with these goals: [goals]"</li>
+    <li><strong>During:</strong> Record and transcribe with Otter.ai, Fireflies, or Gong</li>
+    <li><strong>After:</strong> "Here are my meeting notes. Create action items with owners and deadlines"</li>
+  </ul>
+
+  <h3>AI for Writing</h3>
+  <table>
+    <tr><th>Task</th><th>Prompt Pattern</th></tr>
+    <tr><td>First draft</td><td>"Write a [type] about [topic] for [audience]. Tone: [tone]. Length: [length]"</td></tr>
+    <tr><td>Edit &amp; improve</td><td>"Make this more concise / engaging / professional / persuasive"</td></tr>
+    <tr><td>Repurpose</td><td>"Turn this blog post into 5 LinkedIn posts and an email newsletter intro"</td></tr>
+    <tr><td>Translate</td><td>"Translate this to Spanish, maintaining the professional tone"</td></tr>
+  </table>
+
+  <h3>AI for Data &amp; Analysis</h3>
+  <div class="prompt-box">"Here's a table of our Q4 sales data [paste data].
+Answer these questions:
+1. Which product had the highest growth rate?
+2. Which region underperformed vs Q3?
+3. What patterns do you see that we should investigate?
+Present answers in a table with supporting numbers."</div>
+
+  <h3>AI for Learning</h3>
+  <ul>
+    <li>"Explain [complex topic] like I'm new to the field. Use analogies."</li>
+    <li>"I have a presentation on [topic] tomorrow. Give me the 5 most important points I need to know."</li>
+    <li>"What are the 3 most common mistakes beginners make with [skill]?"</li>
+  </ul>
+
+  <h3>The 80/20 Rule of AI Productivity</h3>
+  <p>You'll get 80% of the value from these 5 daily uses:</p>
+  <ol>
+    <li><strong>Drafting</strong> &mdash; First drafts of emails, reports, messages</li>
+    <li><strong>Summarizing</strong> &mdash; Long documents, meeting notes, articles</li>
+    <li><strong>Brainstorming</strong> &mdash; Ideas, approaches, solutions</li>
+    <li><strong>Formatting</strong> &mdash; Turn messy notes into clean documents</li>
+    <li><strong>Learning</strong> &mdash; Quick explanations of unfamiliar topics</li>
+  </ol>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>Use AI for the repetitive parts of your work &mdash; drafting, summarizing, formatting, brainstorming. Save your human brainpower for strategy, relationships, and creative thinking. The goal isn't to replace your work, it's to eliminate the drudgery so you can focus on what matters.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 19.1 &mdash; AI Day Challenge</div>
+    <p>Tomorrow, use AI for at least 5 work tasks. Keep a log:</p>
+    <table>
+      <tr><th>Task</th><th>Time Without AI</th><th>Time With AI</th><th>Quality</th></tr>
+      <tr><td>(fill in)</td><td></td><td></td><td></td></tr>
+    </table>
+    <p>At the end of the day, calculate how much time you saved.</p>
+  </div>
+
+  <div class="exercise-box">
+    <div class="exercise-label">Exercise 19.2 &mdash; Build Your Prompt Library</div>
+    <p>Create a document with your 10 most useful prompts &mdash; ones you'll use repeatedly. Include prompts for: email drafting, meeting prep, data analysis, content creation, and learning. This is your personal AI toolkit.</p>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(18)">&larr; Chapter 18</button>
+    <button class="nav-btn primary" onclick="goTo(20)">Chapter 20 &rarr;</button>
+  </div>
+</div>
+
+<!-- ==================== CHAPTER 20: THE AI LANDSCAPE ==================== -->
+<div class="chapter" data-chapter="20">
+  <div class="chapter-label">Chapter 20</div>
+  <h2>The AI Landscape &amp; What's Next</h2>
+  <p class="subtitle">Understanding the ecosystem, staying current, and preparing for the future.</p>
+
+  <div class="big-idea">AI is evolving faster than any technology in history. The tools you learned about in this course will improve dramatically in the coming months and years. This chapter helps you understand the bigger picture and stay current.</div>
+
+  <h3>The AI Ecosystem Map</h3>
+  <table>
+    <tr><th>Layer</th><th>What It Is</th><th>Key Players</th></tr>
+    <tr><td><strong>Foundation Models</strong></td><td>The core AI brains</td><td>OpenAI (GPT), Anthropic (Claude), Google (Gemini), Meta (Llama), Mistral</td></tr>
+    <tr><td><strong>AI Platforms</strong></td><td>Where you use AI</td><td>ChatGPT, Claude.ai, Gemini, Copilot</td></tr>
+    <tr><td><strong>AI Dev Tools</strong></td><td>Tools for building with AI</td><td>Claude Code, Cursor, Replit, v0, Bolt</td></tr>
+    <tr><td><strong>AI Infrastructure</strong></td><td>The hardware and cloud</td><td>NVIDIA (chips), AWS/Azure/GCP (cloud)</td></tr>
+    <tr><td><strong>AI Applications</strong></td><td>AI built into products</td><td>Notion AI, Canva AI, Grammarly, Jasper</td></tr>
+    <tr><td><strong>AI Agents</strong></td><td>AI that takes actions</td><td>Claude Code agents, AutoGPT, custom agents</td></tr>
+  </table>
+
+  <h3>Open Source vs. Closed Source</h3>
+  <table>
+    <tr><th></th><th>Closed Source</th><th>Open Source</th></tr>
+    <tr><td><strong>What</strong></td><td>Models controlled by companies</td><td>Models anyone can download and modify</td></tr>
+    <tr><td><strong>Examples</strong></td><td>GPT-4, Claude</td><td>Llama, Mistral, Phi</td></tr>
+    <tr><td><strong>Pros</strong></td><td>Usually more capable, easier to use</td><td>Free, private (runs on your computer), customizable</td></tr>
+    <tr><td><strong>Cons</strong></td><td>Costs money, data goes to company servers</td><td>Often less capable, harder to set up</td></tr>
+  </table>
+
+  <h3>What's Coming Next</h3>
+  <ul>
+    <li><strong>Better reasoning</strong> &mdash; AI that thinks through complex problems more carefully</li>
+    <li><strong>Longer memory</strong> &mdash; AI that remembers your entire history of conversations</li>
+    <li><strong>Better agents</strong> &mdash; AI that can independently handle multi-day projects</li>
+    <li><strong>Multimodal everything</strong> &mdash; AI that seamlessly works with text, images, video, and audio together</li>
+    <li><strong>AI on your device</strong> &mdash; Models that run on your phone and laptop, no internet needed</li>
+    <li><strong>Industry-specific AI</strong> &mdash; Models trained specifically for law, medicine, finance, etc.</li>
+    <li><strong>AI-to-AI collaboration</strong> &mdash; Multiple AI agents working together on complex tasks</li>
+  </ul>
+
+  <h3>How to Stay Current</h3>
+  <ul>
+    <li><strong>Follow the source:</strong> Anthropic blog, OpenAI blog, Google AI blog</li>
+    <li><strong>Newsletters:</strong> The Rundown AI, TLDR AI, Ben's Bites</li>
+    <li><strong>Practice daily:</strong> The best way to understand new AI features is to use them</li>
+    <li><strong>Join communities:</strong> Reddit r/ChatGPT, r/ClaudeAI, Twitter/X AI community</li>
+  </ul>
+
+  <h3>AI &amp; Your Career</h3>
+  <p>AI won't replace you. But <strong>people who use AI will replace people who don't</strong>.</p>
+  <p>The most valuable skill going forward isn't coding or data science &mdash; it's knowing how to <strong>use AI effectively to get work done</strong>. That's exactly what you've learned in this course.</p>
+
+  <div class="key-takeaway">
+    <div class="takeaway-label">Key Takeaway</div>
+    <p>AI is the fastest-moving technology in history. The fundamentals you've learned (prompting, understanding LLMs, agentic AI, MCPs, vibe coding) will remain relevant even as specific tools change. Stay curious, practice daily, and remember: AI is a tool that amplifies your unique human abilities.</p>
+  </div>
+
+  <hr>
+
+  <h3>Course Complete!</h3>
+  <p>You've gone from zero AI knowledge to understanding:</p>
+  <ul>
+    <li>How AI evolved from human experts to search engines to LLMs</li>
+    <li>How LLMs work (pattern matching from billions of texts)</li>
+    <li>How to write effective prompts (role, task, context, format, constraints)</li>
+    <li>Multimodal AI (text, images, audio, code, data)</li>
+    <li>Agentic AI and MCPs (AI that connects to tools and takes action)</li>
+    <li>Vibe coding (building software by describing what you want)</li>
+    <li>AI coding tools (Claude Code, Cursor, Replit)</li>
+    <li>System prompts, skills, and custom instructions</li>
+    <li>APIs, RAG, and building AI agents</li>
+    <li>Daily AI productivity and the broader AI landscape</li>
+  </ul>
+
+  <h3>Your 30-Day AI Challenge</h3>
+  <ol>
+    <li><strong>Week 1:</strong> Use AI to draft emails and summarize documents daily</li>
+    <li><strong>Week 2:</strong> Build 2 simple tools with vibe coding</li>
+    <li><strong>Week 3:</strong> Set up custom instructions and create a prompt library</li>
+    <li><strong>Week 4:</strong> Build an AI agent that automates one repetitive task</li>
+  </ol>
+
+  <p><em>The best time to start using AI was yesterday. The second best time is right now.</em></p>
+
+  <div class="chapter-nav">
+    <button class="nav-btn" onclick="goTo(19)">&larr; Chapter 19</button>
+    <button class="nav-btn primary" onclick="goTo(0)">Back to Course Map</button>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<script>
+const chapters = document.querySelectorAll('.chapter');
+const navList = document.getElementById('nav-list');
+const sidebar = document.getElementById('sidebar');
+const mainEl = document.getElementById('main');
+const progressFill = document.getElementById('progress-fill');
+const progressBar = document.getElementById('progress-bar');
+const toggleBtn = document.getElementById('toggle-sidebar');
+
+const chapterNames = [
+  'Course Map',
+  '1. The Human Question',
+  '2. The Search Engine Era',
+  '3. Enter AI',
+  '4. How AI Works',
+  '5. Talking to AI',
+  '6. AI Beyond Chat',
+  '7. AI That Takes Action',
+  '8. AI Connects to Your World',
+  '9. Choosing the Right AI',
+  '10. Using AI Responsibly',
+  '11. Vibe Coding',
+  '12. AI Coding Tools',
+  '13. Build Your First App',
+  '14. System Prompts',
+  '15. Skills & Extensions',
+  '16. APIs & Integrations',
+  '17. RAG: AI + Your Data',
+  '18. Building AI Agents',
+  '19. AI at Work',
+  '20. The AI Landscape',
+];
+
+let current = 0;
+
+// Build nav
+chapterNames.forEach((name, i) => {
+  const div = document.createElement('div');
+  div.className = 'nav-item' + (i === 0 ? ' active' : '');
+  div.innerHTML = `<span class="ch-num">${i === 0 ? '&#9776;' : i}</span><span>${name}</span>`;
+  div.addEventListener('click', () => goTo(i));
+  navList.appendChild(div);
+});
+
+function goTo(index) {
+  chapters.forEach(c => c.classList.remove('active'));
+  chapters[index].classList.add('active');
+
+  const navItems = navList.querySelectorAll('.nav-item');
+  navItems.forEach((item, i) => {
+    item.classList.remove('active');
+    if (i < index && i > 0) item.classList.add('completed');
+  });
+  navItems[index].classList.add('active');
+
+  current = index;
+  window.scrollTo(0, 0);
+
+  // Progress
+  const pct = index === 0 ? 0 : Math.round((index / (chapterNames.length - 1)) * 100);
+  progressFill.style.width = pct + '%';
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 900) {
+    sidebar.classList.remove('visible');
+  }
+}
+
+function toggleSidebar() {
+  sidebar.classList.toggle('visible');
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && current < chapters.length - 1) goTo(current + 1);
+  if (e.key === 'ArrowLeft' && current > 0) goTo(current - 1);
+});
+
+// Responsive
+function checkWidth() {
+  if (window.innerWidth <= 900) {
+    sidebar.classList.remove('visible');
+    toggleBtn.classList.add('show');
+    mainEl.classList.add('full');
+    progressBar.classList.add('full');
+  } else {
+    sidebar.classList.remove('hidden');
+    toggleBtn.classList.remove('show');
+    mainEl.classList.remove('full');
+    progressBar.classList.remove('full');
+  }
+}
+window.addEventListener('resize', checkWidth);
+checkWidth();
+</script>
+</body>
+</html>
