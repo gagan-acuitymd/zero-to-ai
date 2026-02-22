@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Literacy Training</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FH7B9HZ52V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-FH7B9HZ52V');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2337,6 +2345,18 @@ function goTo(index) {
   // Progress
   const pct = index === 0 ? 0 : Math.round((index / (chapterNames.length - 1)) * 100);
   progressFill.style.width = pct + '%';
+
+  // GA4 tracking
+  if (typeof gtag === 'function') {
+    gtag('event', 'chapter_view', {
+      chapter_number: index,
+      chapter_name: chapterNames[index],
+      progress_percent: pct
+    });
+    if (index === chapterNames.length - 1) {
+      gtag('event', 'course_completed');
+    }
+  }
 
   // Close sidebar on mobile
   if (window.innerWidth <= 900) {
